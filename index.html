@@ -13,6 +13,36 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
     />
+    <style>
+      /* Hide the workspace until Clerk confirms a session, otherwise the
+         protected page flashes for the unauth'd user before the redirect. */
+      html[data-auth='pending'] body > header,
+      html[data-auth='pending'] body > main {
+        visibility: hidden;
+      }
+      #auth-gate {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: oklch(0.985 0.008 75);
+        z-index: 60;
+      }
+      html[data-auth='pending'] #auth-gate {
+        display: flex;
+      }
+      #auth-gate__label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+        color: oklch(0.62 0.02 60);
+      }
+    </style>
+    <script>
+      // Set as early as possible so the very first paint hides the workspace.
+      document.documentElement.setAttribute('data-auth', 'pending');
+    </script>
   </head>
   <body>
     <header class="page topbar">
@@ -234,6 +264,11 @@
         </aside>
       </div>
     </main>
+
+    <!-- Loading gate (shown while Clerk verifies the session) -->
+    <div id="auth-gate" aria-live="polite">
+      <span id="auth-gate__label">Verifying session…</span>
+    </div>
 
     <!-- Auth-config overlay -->
     <div

@@ -12,6 +12,7 @@ async function init() {
     user = await requireUser({ redirectTo: '/auth.html' });
   } catch (err) {
     if (err instanceof AuthConfigError) {
+      document.documentElement.setAttribute('data-auth', 'error');
       const overlay = document.getElementById('config-overlay');
       const message = document.getElementById('config-overlay-message');
       if (overlay && message) {
@@ -23,7 +24,10 @@ async function init() {
     }
     throw err;
   }
-  if (!user) return; // redirecting
+  if (!user) return; // redirecting — keep the gate up so nothing flashes
+
+  // Auth confirmed — reveal the workspace and dismiss the gate.
+  document.documentElement.setAttribute('data-auth', 'ready');
 
   createWorkspace({
     storage: localStorageAdapter,
