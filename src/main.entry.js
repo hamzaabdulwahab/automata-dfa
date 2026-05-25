@@ -1,11 +1,13 @@
 import './styles/main.css';
 import { renderIcons } from './ui/icons.js';
+import { mountThemeToggle } from './ui/theme.js';
 import { requireUser, signOut, AuthConfigError } from './auth/clerk.js';
 import { localStorageAdapter } from './storage/local.js';
 import { createWorkspace } from './ui/workspace.js';
 
 async function init() {
   renderIcons();
+  mountThemeToggle(document.getElementById('theme-toggle'));
 
   let user;
   try {

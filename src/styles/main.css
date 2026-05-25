@@ -11,6 +11,7 @@
   --color-rule: oklch(0.88 0.012 75);
   --color-rule-strong: oklch(0.78 0.015 75);
   --color-ink: oklch(0.22 0.02 60);
+  --color-ink-hover: oklch(0.14 0.02 60);
   --color-ink-muted: oklch(0.46 0.02 60);
   --color-ink-faint: oklch(0.62 0.02 60);
   --color-accent: oklch(0.55 0.16 40);
@@ -22,6 +23,27 @@
   --color-reject-quiet: oklch(0.95 0.04 25);
 }
 
+:root[data-theme='dark'] {
+  /* Late-night reading desk: warm coffee brown surfaces, cream ink.
+     Same hue family as the paper palette, lightness inverted. */
+  --color-paper: oklch(0.185 0.014 60);
+  --color-paper-2: oklch(0.225 0.014 60);
+  --color-paper-3: oklch(0.27 0.014 60);
+  --color-rule: oklch(0.32 0.014 60);
+  --color-rule-strong: oklch(0.44 0.014 60);
+  --color-ink: oklch(0.94 0.01 80);
+  --color-ink-hover: oklch(1 0 0);
+  --color-ink-muted: oklch(0.72 0.012 80);
+  --color-ink-faint: oklch(0.55 0.014 80);
+  --color-accent: oklch(0.72 0.16 45);
+  --color-accent-hover: oklch(0.78 0.16 45);
+  --color-accent-quiet: oklch(0.32 0.07 45);
+  --color-accept: oklch(0.72 0.16 145);
+  --color-accept-quiet: oklch(0.3 0.06 145);
+  --color-reject: oklch(0.72 0.2 30);
+  --color-reject-quiet: oklch(0.32 0.08 25);
+}
+
 @layer base {
   html {
     color-scheme: light;
@@ -31,6 +53,12 @@
       "ss01" 1,
       "cv11" 1,
       "tnum" 0;
+    transition:
+      background 200ms cubic-bezier(0.2, 0, 0, 1),
+      color 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  html[data-theme='dark'] {
+    color-scheme: dark;
   }
 
   body {
@@ -280,8 +308,8 @@
     border-color: var(--color-ink);
   }
   .btn--primary:hover:not([disabled]) {
-    background: oklch(0.14 0.02 60);
-    border-color: oklch(0.14 0.02 60);
+    background: var(--color-ink-hover);
+    border-color: var(--color-ink-hover);
   }
 
   .btn--accent {
@@ -580,7 +608,7 @@
     transition: background 150ms cubic-bezier(0.2, 0, 0, 1);
   }
   .btn-google:hover:not([disabled]) {
-    background: oklch(0.14 0.02 60);
+    background: var(--color-ink-hover);
   }
   .btn-google[disabled] {
     background: var(--color-paper-2);
@@ -643,6 +671,38 @@
     height: 14px;
     stroke-width: 1.5;
     flex-shrink: 0;
+  }
+
+  /* Theme toggle — shows the icon of the theme you'll switch TO */
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-ink-muted);
+    cursor: pointer;
+    transition: all 150ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .theme-toggle:hover {
+    color: var(--color-ink);
+    background: var(--color-paper-2);
+  }
+  .theme-toggle .lucide {
+    width: 15px;
+    height: 15px;
+  }
+  .theme-toggle .lucide.sun {
+    display: none;
+  }
+  .theme-toggle[data-theme='dark'] .lucide.moon {
+    display: none;
+  }
+  .theme-toggle[data-theme='dark'] .lucide.sun {
+    display: inline-block;
   }
 
   /* Utility for the accent ink */

@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#fbf7ed" />
+    <meta name="theme-color" content="#fbf7ed" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#2a241e" media="(prefers-color-scheme: dark)" />
     <title>Sign in · Automata Studio</title>
     <meta
       name="description"
@@ -16,12 +17,28 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
     />
+    <script>
+      // Set the theme before first paint to avoid a light-to-dark flash.
+      (function () {
+        try {
+          var t = localStorage.getItem('automata-dfa:theme');
+          if (t !== 'light' && t !== 'dark') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div class="auth-frame">
       <header class="page topbar">
         <a href="/auth.html" class="wordmark"> Automata Studio<span class="wordmark__glyph">δ</span> </a>
         <div class="topbar__meta">
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme">
+            <i data-lucide="moon" class="lucide moon" aria-hidden="true"></i>
+            <i data-lucide="sun" class="lucide sun" aria-hidden="true"></i>
+          </button>
           <a
             href="https://github.com/hamzaabdulwahab/automata-dfa"
             class="btn btn--ghost btn--sm"

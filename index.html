@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#fbf7ed" />
+    <meta name="theme-color" content="#fbf7ed" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#2a241e" media="(prefers-color-scheme: dark)" />
     <title>Automata Studio — δ workbench</title>
     <meta name="description" content="Define, test, convert and minimize finite automata over the web." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -26,7 +27,7 @@
         display: none;
         align-items: center;
         justify-content: center;
-        background: oklch(0.985 0.008 75);
+        background: var(--color-paper);
         z-index: 60;
       }
       html[data-auth='pending'] #auth-gate {
@@ -36,12 +37,23 @@
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.75rem;
         letter-spacing: 0.04em;
-        color: oklch(0.62 0.02 60);
+        color: var(--color-ink-faint);
       }
     </style>
     <script>
-      // Set as early as possible so the very first paint hides the workspace.
-      document.documentElement.setAttribute('data-auth', 'pending');
+      // Set theme + auth-gate state before the first paint to avoid flashes.
+      (function () {
+        try {
+          var t = localStorage.getItem('automata-dfa:theme');
+          if (t !== 'light' && t !== 'dark') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {
+          /* localStorage / matchMedia may be unavailable */
+        }
+        document.documentElement.setAttribute('data-auth', 'pending');
+      })();
     </script>
   </head>
   <body>
@@ -49,6 +61,10 @@
       <a href="/" class="wordmark"> Automata Studio<span class="wordmark__glyph">δ</span> </a>
       <div class="topbar__meta">
         <span id="user-email" class="topbar__email" hidden></span>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme">
+          <i data-lucide="moon" class="lucide moon" aria-hidden="true"></i>
+          <i data-lucide="sun" class="lucide sun" aria-hidden="true"></i>
+        </button>
         <button id="sign-out" class="btn btn--ghost btn--sm" type="button">Sign out</button>
       </div>
     </header>

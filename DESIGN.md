@@ -20,26 +20,49 @@ Type scale (rem, fixed):
 
 ## Color
 
-Strategy: **Restrained**. Warm paper-toned light surface, near-ink text, one earthen accent used as ink, not decoration.
+Strategy: **Restrained**. Warm paper-toned light surface (default) and a warm coffee-brown dark surface (toggleable), with near-ink text and one earthen accent used as ink, not decoration. Same hue family in both themes — the dark variant is paper at midnight, not slate.
 
-Tokens (OKLCH, all neutrals carry the warm tint):
+The theme is picked by `prefers-color-scheme` on first visit, then persisted to `localStorage['automata-dfa:theme']`. The toggle in the top bar flips between the two. Applied via `data-theme` attribute on `<html>` and set inline in a head `<script>` before the first paint to avoid theme-flash.
+
+### Light tokens
 
 | Token            | Value                   | Use                                        |
 | ---------------- | ----------------------- | ------------------------------------------ |
 | `--paper`        | `oklch(0.985 0.008 75)` | Page background — warm off-white           |
 | `--paper-2`      | `oklch(0.97 0.012 75)`  | Sunken surfaces (input fields, code wells) |
+| `--paper-3`      | `oklch(0.945 0.014 75)` | Table header rows                          |
 | `--rule`         | `oklch(0.88 0.012 75)`  | Hairlines between sections                 |
 | `--rule-strong`  | `oklch(0.78 0.015 75)`  | Borders on focused/hovered controls        |
 | `--ink`          | `oklch(0.22 0.02 60)`   | Body type — warm near-black, never #000    |
+| `--ink-hover`    | `oklch(0.14 0.02 60)`   | Darker ink for primary-button hover        |
 | `--ink-muted`    | `oklch(0.46 0.02 60)`   | Captions, labels                           |
-| `--ink-faint`    | `oklch(0.65 0.02 60)`   | Hints                                      |
-| `--accent`       | `oklch(0.55 0.16 40)`   | Terracotta / vermilion. Sparse, ink-grade  |
+| `--ink-faint`    | `oklch(0.62 0.02 60)`   | Hints                                      |
+| `--accent`       | `oklch(0.55 0.16 40)`   | Terracotta. Sparse, ink-grade              |
 | `--accent-hover` | `oklch(0.48 0.18 38)`   | Hover                                      |
 | `--accent-quiet` | `oklch(0.94 0.04 50)`   | Soft fill behind accent text               |
 | `--accept`       | `oklch(0.5 0.13 145)`   | Accepted-state mark (forest green)         |
-| `--reject`       | `oklch(0.5 0.18 25)`    | Rejected-state mark (only on results)      |
+| `--reject`       | `oklch(0.5 0.18 25)`    | Rejected-state mark                        |
 
-Forbidden: indigo, purple, slate-blue gradients, anything with chroma > 0.04 at lightness < 0.2 (looks muddy on warm paper).
+### Dark tokens
+
+| Token            | Value                   | Use                                              |
+| ---------------- | ----------------------- | ------------------------------------------------ |
+| `--paper`        | `oklch(0.185 0.014 60)` | Page background — deep warm coffee, never black  |
+| `--paper-2`      | `oklch(0.225 0.014 60)` | Sunken surfaces                                  |
+| `--paper-3`      | `oklch(0.27 0.014 60)`  | Table header rows                                |
+| `--rule`         | `oklch(0.32 0.014 60)`  | Hairlines                                        |
+| `--rule-strong`  | `oklch(0.44 0.014 60)`  | Borders                                          |
+| `--ink`          | `oklch(0.94 0.01 80)`   | Body type — warm cream, never #fff               |
+| `--ink-hover`    | `oklch(1 0 0)`          | Primary button hover (paper button on dark page) |
+| `--ink-muted`    | `oklch(0.72 0.012 80)`  |                                                  |
+| `--ink-faint`    | `oklch(0.55 0.014 80)`  |                                                  |
+| `--accent`       | `oklch(0.72 0.16 45)`   | Brighter terracotta, legible at low surface L    |
+| `--accent-hover` | `oklch(0.78 0.16 45)`   |                                                  |
+| `--accent-quiet` | `oklch(0.32 0.07 45)`   | Dim coffee-terracotta backing                    |
+| `--accept`       | `oklch(0.72 0.16 145)`  |                                                  |
+| `--reject`       | `oklch(0.72 0.2 30)`    |                                                  |
+
+Forbidden in either theme: indigo, purple, slate-blue gradients, anything with chroma > 0.04 at lightness < 0.2 (muddy on warm paper, garish on warm coffee).
 
 ## Layout
 

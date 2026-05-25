@@ -1,5 +1,6 @@
 import './styles/main.css';
 import { renderIcons } from './ui/icons.js';
+import { mountThemeToggle } from './ui/theme.js';
 import { signInWithGoogle, redirectIfSignedIn, AuthConfigError } from './auth/clerk.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -20,6 +21,7 @@ function setBusy(busy) {
 
 async function init() {
   renderIcons();
+  mountThemeToggle(document.getElementById('theme-toggle'));
   try {
     await redirectIfSignedIn({ redirectTo: '/' });
   } catch (err) {
