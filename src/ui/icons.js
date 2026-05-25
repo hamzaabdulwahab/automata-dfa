@@ -1,55 +1,6 @@
-import {
-  createIcons,
-  Workflow,
-  Plus,
-  Trash2,
-  Save,
-  Play,
-  Sparkles,
-  GitMerge,
-  Minimize2,
-  LogOut,
-  CircleHelp,
-  Check,
-  X,
-  ChevronRight,
-  ArrowRight,
-  FileText,
-  RotateCcw,
-  ShieldCheck,
-  Github,
-  ExternalLink,
-  Loader2,
-  Menu,
-  Library,
-  Inbox,
-} from 'lucide';
+import { createIcons, Trash2 } from 'lucide';
 
-const icons = {
-  Workflow,
-  Plus,
-  Trash2,
-  Save,
-  Play,
-  Sparkles,
-  GitMerge,
-  Minimize2,
-  LogOut,
-  CircleHelp,
-  Check,
-  X,
-  ChevronRight,
-  ArrowRight,
-  FileText,
-  RotateCcw,
-  ShieldCheck,
-  Github,
-  ExternalLink,
-  Loader2,
-  Menu,
-  Library,
-  Inbox,
-};
+const icons = { Trash2 };
 
 export function renderIcons(root = document) {
   createIcons({ icons, attrs: { class: 'lucide' }, nameAttr: 'data-lucide', root });

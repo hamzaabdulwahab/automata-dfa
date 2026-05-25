@@ -3,318 +3,289 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ffffff" />
-    <title>Automata Studio — DFA · NFA · ε-NFA</title>
-    <meta
-      name="description"
-      content="A clean studio for defining, testing, converting and minimizing finite automata over the web."
-    />
+    <meta name="theme-color" content="#fbf7ed" />
+    <title>Automata Studio — δ workbench</title>
+    <meta name="description" content="Define, test, convert and minimize finite automata over the web." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
     />
   </head>
-  <body class="min-h-dvh">
-    <header
-      class="sticky top-0 z-30 border-b backdrop-blur"
-      style="background: oklch(1 0 0 / 0.85); border-color: var(--color-border)"
-    >
-      <div class="container-app flex h-14 items-center justify-between gap-3">
-        <a href="/" class="flex items-center gap-2 font-semibold tracking-tight">
-          <span
-            class="inline-flex h-7 w-7 items-center justify-center rounded-[7px]"
-            style="background: var(--color-accent); color: white"
-          >
-            <i data-lucide="workflow" style="font-size: 16px"></i>
-          </span>
-          <span class="hidden sm:inline">Automata Studio</span>
-        </a>
-
-        <nav class="hidden items-center gap-1 sm:flex" aria-label="Primary">
-          <span class="chip">
-            <i data-lucide="sparkles" style="font-size: 13px"></i>
-            DFA · NFA · ε-NFA
-          </span>
-        </nav>
-
-        <div class="flex items-center gap-2">
-          <span id="user-email" class="hidden text-xs sm:inline" style="color: var(--color-ink-muted)"></span>
-          <button id="sign-out" class="btn btn-ghost text-xs" type="button">
-            <i data-lucide="log-out" style="font-size: 14px"></i>
-            <span class="hidden sm:inline">Sign out</span>
-          </button>
-        </div>
+  <body>
+    <header class="page topbar">
+      <a href="/" class="wordmark"> Automata Studio<span class="wordmark__glyph">δ</span> </a>
+      <div class="topbar__meta">
+        <span id="user-email" class="topbar__email" hidden></span>
+        <button id="sign-out" class="btn btn--ghost btn--sm" type="button">Sign out</button>
       </div>
     </header>
 
-    <main class="container-app py-6 lg:py-8">
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-        <section class="space-y-6" aria-label="Automaton workspace">
-          <!-- Hero / type tabs -->
-          <div class="card">
-            <div class="card-body">
-              <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h1 class="text-xl font-semibold tracking-tight sm:text-2xl">
-                    <span id="automaton-name-display">Untitled automaton</span>
-                  </h1>
-                  <p class="mt-1 text-sm" style="color: var(--color-ink-muted)">
-                    Define states, alphabet and transitions — then test strings or transform between machines.
-                  </p>
-                </div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <button id="action-new" class="btn btn-secondary text-xs" type="button">
-                    <i data-lucide="file-text" style="font-size: 14px"></i>
-                    New
-                  </button>
-                  <button id="action-example" class="btn btn-ghost text-xs" type="button">
-                    <i data-lucide="sparkles" style="font-size: 14px"></i>
-                    Load example
-                  </button>
-                </div>
-              </div>
+    <main class="page" style="padding-top: 32px; padding-bottom: 96px">
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 56px" id="workspace-grid">
+        <article>
+          <!-- Title block: live name + type -->
+          <header style="margin-bottom: 24px">
+            <p class="eyebrow" style="margin-bottom: 12px">
+              <span id="type-eyebrow">Deterministic finite automaton</span>
+              <span style="margin: 0 8px; color: var(--color-ink-faint)">·</span>
+              <span class="num" id="type-stats">2 states, 2 symbols</span>
+            </p>
+            <h1 class="display">
+              <span id="automaton-name-display">Untitled automaton</span>
+            </h1>
+            <p class="auth-epigraph" style="margin-top: 14px">
+              M&nbsp;=&nbsp;(<span class="accent">Q</span>,&nbsp;<span class="accent">Σ</span>,&nbsp;<span
+                class="accent"
+                >δ</span
+              >,&nbsp;<span class="accent">q<sub>0</sub></span
+              >,&nbsp;<span class="accent">F</span>)
+            </p>
+          </header>
 
-              <div
-                class="mt-5 inline-flex w-full max-w-md gap-1 rounded-[10px] p-1"
-                style="background: var(--color-surface-2); border: 1px solid var(--color-border)"
-                role="tablist"
-                aria-label="Automaton type"
-              >
-                <button data-type="DFA" role="tab" aria-selected="true" class="tab flex-1 justify-center" type="button">
-                  DFA
-                </button>
-                <button
-                  data-type="NFA"
-                  role="tab"
-                  aria-selected="false"
-                  class="tab flex-1 justify-center"
-                  type="button"
-                >
-                  NFA
-                </button>
-                <button
-                  data-type="EPSILON_NFA"
-                  role="tab"
-                  aria-selected="false"
-                  class="tab flex-1 justify-center"
-                  type="button"
-                >
-                  ε-NFA
-                </button>
-              </div>
+          <!-- Toolbar -->
+          <div
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 12px;
+              align-items: center;
+              justify-content: space-between;
+              padding: 12px 0;
+              border-top: 1px solid var(--color-rule);
+              border-bottom: 1px solid var(--color-rule);
+            "
+          >
+            <div class="segmented" role="tablist" aria-label="Automaton type">
+              <button class="segmented__item" data-type="DFA" role="tab" aria-selected="true" type="button">DFA</button>
+              <button class="segmented__item" data-type="NFA" role="tab" aria-selected="false" type="button">
+                NFA
+              </button>
+              <button class="segmented__item" data-type="EPSILON_NFA" role="tab" aria-selected="false" type="button">
+                ε-NFA
+              </button>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <button id="action-example" class="btn btn--ghost btn--sm" type="button">Load example</button>
+              <button id="action-new" class="btn btn--sm" type="button">New</button>
+              <button id="action-convert" class="btn btn--sm" type="button" hidden>Convert to DFA</button>
+              <button id="action-minimize" class="btn btn--sm" type="button" hidden>Minimize</button>
+              <button id="action-save" class="btn btn--primary btn--sm" type="button">Save</button>
             </div>
           </div>
 
-          <!-- Definition form -->
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title">Definition</h2>
-              <span id="definition-status" class="chip">
-                <i data-lucide="circle-help" style="font-size: 13px"></i>
-                <span>Edit fields below</span>
-              </span>
+          <!-- §1 Definition -->
+          <section class="section">
+            <div class="section__head">
+              <div class="section__title">
+                <span class="section__no">§1</span>
+                <h2 class="h2">Definition</h2>
+              </div>
+              <span id="definition-status" class="eyebrow" aria-live="polite"></span>
             </div>
-            <div class="card-body grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label class="label" for="input-name">Name</label>
-                <input id="input-name" class="input" placeholder="e.g. ends-in-1" autocomplete="off" />
-              </div>
-              <div>
-                <label class="label" for="input-start">Start state</label>
-                <input id="input-start" class="input input-mono" placeholder="q0" autocomplete="off" />
-              </div>
-              <div>
-                <label class="label" for="input-states">States (comma-separated)</label>
-                <input
-                  id="input-states"
-                  class="input input-mono"
-                  placeholder="q0, q1, q2"
-                  autocomplete="off"
-                  aria-describedby="hint-states"
-                />
-                <p id="hint-states" class="hint">Each label must be unique and non-empty.</p>
-              </div>
-              <div>
-                <label class="label" for="input-alphabet">Alphabet (comma-separated)</label>
-                <input
-                  id="input-alphabet"
-                  class="input input-mono"
-                  placeholder="0, 1"
-                  autocomplete="off"
-                  aria-describedby="hint-alphabet"
-                />
-                <p id="hint-alphabet" class="hint">
-                  Single characters or short tokens.
-                  <span id="hint-epsilon" class="hidden">ε is added automatically for ε-NFAs.</span>
-                </p>
-              </div>
-              <div class="md:col-span-2">
-                <label class="label" for="input-accept">Accept states (comma-separated)</label>
-                <input id="input-accept" class="input input-mono" placeholder="q1" autocomplete="off" />
-              </div>
-            </div>
-          </div>
 
-          <!-- Transition table -->
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title">Transition table</h2>
-              <span id="table-status" class="chip">
-                <span id="table-status-text">No transitions yet</span>
-              </span>
-            </div>
-            <div class="card-body">
-              <div id="transition-empty" class="text-center py-8 text-sm" style="color: var(--color-ink-subtle)">
-                <span
-                  class="mx-auto mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full"
-                  style="background: var(--color-surface-2)"
-                  ><i data-lucide="inbox" style="font-size: 18px"></i
-                ></span>
-                <p>Add states and an alphabet above to begin editing transitions.</p>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px">
+              <div class="field">
+                <label for="input-name" class="field__label">Name</label>
+                <input id="input-name" class="input" autocomplete="off" placeholder="e.g. ends in 1" />
               </div>
-              <div id="transition-wrap" class="hidden">
-                <div class="scrollarea overflow-x-auto">
-                  <table id="transition-table" class="min-w-full text-sm">
-                    <thead>
-                      <tr>
-                        <th class="px-3 py-2 text-left font-medium" style="color: var(--color-ink-muted)">
-                          State \ Symbol
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody></tbody>
-                  </table>
-                </div>
-                <p class="hint mt-3" id="transition-hint">
-                  For NFAs, separate multiple targets with commas (e.g. <code>q0, q1</code>). Leave blank for no
-                  transition.
-                </p>
+              <div class="field">
+                <label for="input-start" class="field__label field__label--sym">
+                  <span class="field__sym">q<sub>0</sub></span>
+                  <span class="field__label-name">Start state</span>
+                </label>
+                <input id="input-start" class="input input--mono" autocomplete="off" placeholder="q0" />
+              </div>
+              <div class="field">
+                <label for="input-states" class="field__label field__label--sym">
+                  <span class="field__sym">Q</span>
+                  <span class="field__label-name">States</span>
+                </label>
+                <input id="input-states" class="input input--mono" autocomplete="off" placeholder="q0, q1, q2" />
+                <span class="field__hint">Comma-separated. Labels must be unique.</span>
+              </div>
+              <div class="field">
+                <label for="input-alphabet" class="field__label field__label--sym">
+                  <span class="field__sym">Σ</span>
+                  <span class="field__label-name">Alphabet</span>
+                </label>
+                <input id="input-alphabet" class="input input--mono" autocomplete="off" placeholder="0, 1" />
+                <span class="field__hint">
+                  Comma-separated single characters or short tokens.<span id="hint-epsilon" hidden>
+                    ε is implicit for ε-NFA transitions.</span
+                  >
+                </span>
+              </div>
+              <div class="field" style="grid-column: 1 / -1">
+                <label for="input-accept" class="field__label field__label--sym">
+                  <span class="field__sym">F</span>
+                  <span class="field__label-name">Accept states</span>
+                </label>
+                <input id="input-accept" class="input input--mono" autocomplete="off" placeholder="q1" />
               </div>
             </div>
-          </div>
+          </section>
 
-          <!-- String tester -->
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title">Test an input string</h2>
-              <div class="flex items-center gap-2">
-                <button id="action-convert" class="btn btn-ghost text-xs hidden" type="button">
-                  <i data-lucide="git-merge" style="font-size: 14px"></i>
-                  Convert to DFA
-                </button>
-                <button id="action-minimize" class="btn btn-ghost text-xs hidden" type="button">
-                  <i data-lucide="minimize-2" style="font-size: 14px"></i>
-                  Minimize
-                </button>
+          <!-- §2 Transition function -->
+          <section class="section">
+            <div class="section__head">
+              <div class="section__title">
+                <span class="section__no">§2</span>
+                <h2 class="h2">
+                  Transition function&nbsp;<span class="auth-epigraph" style="font-size: 0.875rem">δ</span>
+                </h2>
               </div>
+              <span id="table-status" class="eyebrow"></span>
             </div>
-            <div class="card-body space-y-4">
-              <div class="flex flex-col gap-2 sm:flex-row">
-                <input
-                  id="input-test"
-                  class="input input-mono flex-1"
-                  placeholder="Enter a string over your alphabet…"
-                  autocomplete="off"
-                />
-                <button id="action-test" class="btn btn-primary" type="button">
-                  <i data-lucide="play" style="font-size: 15px"></i>
-                  Test
-                </button>
-              </div>
-              <div
-                id="test-result"
-                class="hidden rounded-[12px] border px-4 py-3"
-                style="border-color: var(--color-border)"
-              >
-                <div class="flex items-center justify-between gap-3">
-                  <div class="flex items-center gap-2">
-                    <span id="test-result-chip" class="chip"></span>
-                    <span id="test-result-input" class="text-sm font-mono" style="color: var(--color-ink-muted)"></span>
-                  </div>
-                  <span id="test-result-detail" class="text-xs" style="color: var(--color-ink-subtle)"></span>
-                </div>
-                <div id="test-trace" class="mt-3 hidden text-xs font-mono" style="color: var(--color-ink-muted)"></div>
-              </div>
-              <div id="general-error" class="hidden rounded-[10px] px-3 py-2 text-sm" role="alert"></div>
-            </div>
-          </div>
 
-          <!-- Save bar -->
-          <div class="card">
-            <div class="card-body flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm font-medium">Save this automaton to your library</p>
-                <p class="hint mt-0">Saved automata live in your browser. Sign-in keeps them scoped to your account.</p>
-              </div>
-              <div class="flex gap-2">
-                <button id="action-save" class="btn btn-primary text-sm" type="button">
-                  <i data-lucide="save" style="font-size: 14px"></i>
-                  Save
-                </button>
-              </div>
+            <div id="transition-empty" style="padding: 32px 0; color: var(--color-ink-faint); font-style: italic">
+              Add states (Q) and a non-empty alphabet (Σ) above to populate the transition matrix.
             </div>
-          </div>
-        </section>
 
-        <aside class="space-y-4" aria-label="Saved automata">
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title flex items-center gap-2">
-                <i data-lucide="library" style="font-size: 14px"></i>
-                Your library
-              </h2>
-              <span id="library-count" class="chip">0</span>
+            <div id="transition-wrap" hidden>
+              <div style="overflow-x: auto; margin: 0 -2px; padding: 2px">
+                <table id="transition-table" class="matrix">
+                  <thead>
+                    <tr>
+                      <th>δ</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <p id="transition-hint" class="field__hint" style="margin-top: 10px">
+                Enter the target state for each (state, symbol). For NFA / ε-NFA, separate multiple targets with commas.
+                Leave blank for no transition.
+              </p>
             </div>
-            <div id="library-list" class="px-2 py-2"></div>
-            <div id="library-empty" class="px-5 py-8 text-center text-sm" style="color: var(--color-ink-subtle)">
-              <p>No saved automata yet.</p>
-              <p class="mt-1 text-xs">Build one on the left and hit Save.</p>
-            </div>
-          </div>
+          </section>
 
-          <div class="card">
-            <div class="card-body text-sm">
-              <h3 class="font-semibold tracking-tight">Quick reference</h3>
-              <dl class="mt-3 space-y-2 text-xs" style="color: var(--color-ink-muted)">
-                <div>
-                  <dt class="font-medium" style="color: var(--color-ink)">DFA</dt>
-                  <dd>Exactly one transition per (state, symbol). Deterministic.</dd>
-                </div>
-                <div>
-                  <dt class="font-medium" style="color: var(--color-ink)">NFA</dt>
-                  <dd>Zero or more transitions per (state, symbol).</dd>
-                </div>
-                <div>
-                  <dt class="font-medium" style="color: var(--color-ink)">ε-NFA</dt>
-                  <dd>NFA + transitions on ε (the empty string).</dd>
-                </div>
-              </dl>
+          <!-- §3 Decision -->
+          <section class="section">
+            <div class="section__head">
+              <div class="section__title">
+                <span class="section__no">§3</span>
+                <h2 class="h2">Decide a string</h2>
+              </div>
             </div>
+
+            <div style="display: flex; gap: 8px; align-items: stretch; flex-wrap: wrap">
+              <input
+                id="input-test"
+                class="input input--mono"
+                autocomplete="off"
+                placeholder="Input string over Σ"
+                style="flex: 1; min-width: 220px"
+              />
+              <button id="action-test" class="btn btn--primary" type="button">Decide</button>
+            </div>
+
+            <div id="test-result" class="verdict" hidden>
+              <span id="test-result-chip" class="pill"></span>
+              <span
+                id="test-result-input"
+                style="font-family: var(--font-mono); font-size: 0.875rem; color: var(--color-ink)"
+              ></span>
+              <span
+                id="test-result-detail"
+                style="
+                  font-size: 0.8125rem;
+                  color: var(--color-ink-muted);
+                  flex: 1;
+                  text-align: right;
+                  min-width: 200px;
+                "
+              ></span>
+              <div id="test-trace" class="verdict__trace" style="width: 100%" hidden></div>
+            </div>
+
+            <p id="general-error" class="note" style="margin-top: 16px; display: none" role="alert"></p>
+          </section>
+        </article>
+
+        <!-- Library sidebar -->
+        <aside aria-label="Saved automata" id="sidebar">
+          <div style="position: sticky; top: 24px">
+            <div
+              style="
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                padding-bottom: 12px;
+                border-bottom: 1px solid var(--color-rule);
+              "
+            >
+              <h2 class="h2" style="font-size: 0.9375rem">Library</h2>
+              <span class="eyebrow num"><span id="library-count">0</span> saved</span>
+            </div>
+
+            <div
+              id="library-empty"
+              style="padding: 18px 0; color: var(--color-ink-faint); font-size: 0.8125rem; line-height: 1.5"
+            >
+              Save the current automaton to keep it scoped to your account. Saved machines reopen exactly as you left
+              them.
+            </div>
+
+            <div id="library-list" class="library"></div>
           </div>
         </aside>
       </div>
     </main>
 
-    <!-- Auth-config error overlay (only shown when Clerk publishable key is missing) -->
+    <!-- Auth-config overlay -->
     <div
       id="config-overlay"
-      class="fixed inset-0 z-40 hidden items-center justify-center p-4"
-      style="background: oklch(0 0 0 / 0.45)"
+      style="
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        background: oklch(0.22 0.02 60 / 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      "
     >
-      <div class="card w-full max-w-md">
-        <div class="card-body space-y-3">
-          <h3 class="text-lg font-semibold">Auth configuration needed</h3>
-          <p class="text-sm" style="color: var(--color-ink-muted)" id="config-overlay-message"></p>
-          <p class="hint">
-            Add it to <code class="font-mono">.env.local</code> as
-            <code class="font-mono">VITE_CLERK_PUBLISHABLE_KEY=…</code> and restart the dev server.
-          </p>
-        </div>
+      <div
+        style="
+          max-width: 480px;
+          background: var(--color-paper);
+          border: 1px solid var(--color-rule-strong);
+          border-radius: 4px;
+          padding: 28px;
+        "
+      >
+        <p class="eyebrow" style="margin-bottom: 8px">Setup required</p>
+        <h2 class="h1" style="font-size: 1.25rem">A Clerk publishable key is missing.</h2>
+        <p class="deck" style="margin-top: 10px" id="config-overlay-message"></p>
+        <p style="margin-top: 14px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-ink-muted)">
+          VITE_CLERK_PUBLISHABLE_KEY → .env.local
+        </p>
       </div>
     </div>
+
+    <style>
+      @media (max-width: 960px) {
+        #workspace-grid {
+          grid-template-columns: 1fr !important;
+          gap: 40px !important;
+        }
+        #sidebar > div {
+          position: static !important;
+        }
+      }
+      @media (max-width: 600px) {
+        .display {
+          font-size: 1.875rem !important;
+        }
+        .auth-mark {
+          font-size: 2.25rem !important;
+        }
+      }
+    </style>
 
     <script type="module" src="/src/main.entry.js"></script>
   </body>

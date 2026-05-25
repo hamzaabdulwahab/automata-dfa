@@ -14,6 +14,17 @@ const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
 const TYPES = ['DFA', 'NFA', 'EPSILON_NFA'];
+const TYPE_NAMES = {
+  DFA: 'Deterministic finite automaton',
+  NFA: 'Non-deterministic finite automaton',
+  EPSILON_NFA: 'Non-deterministic finite automaton with ε-transitions',
+};
+
+const escapeHtml = (s) =>
+  String(s).replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+  );
 
 export function createWorkspace({ storage, user, onSignOut }) {
   const state = {
@@ -23,17 +34,15 @@ export function createWorkspace({ storage, user, onSignOut }) {
     alphabet: [],
     startState: '',
     acceptStates: [],
-    /** transitions: Record<state, Record<symbol, string | string[]>>
-     *  For DFA we keep strings, for NFA/ε-NFA we keep string[].
-     */
     transitions: {},
     activeId: null,
   };
 
-  // ----------- DOM cache -----------
   const els = {
     name: $('#input-name'),
     nameDisplay: $('#automaton-name-display'),
+    typeEyebrow: $('#type-eyebrow'),
+    typeStats: $('#type-stats'),
     states: $('#input-states'),
     alphabet: $('#input-alphabet'),
     start: $('#input-start'),
@@ -42,8 +51,6 @@ export function createWorkspace({ storage, user, onSignOut }) {
     transitionEmpty: $('#transition-empty'),
     transitionWrap: $('#transition-wrap'),
     transitionTable: $('#transition-table'),
-    transitionHint: $('#transition-hint'),
-    tableStatusText: $('#table-status-text'),
     tableStatus: $('#table-status'),
     definitionStatus: $('#definition-status'),
     test: $('#input-test'),
@@ -73,13 +80,26 @@ export function createWorkspace({ storage, user, onSignOut }) {
     $$('[role="tab"]').forEach((tab) => {
       tab.setAttribute('aria-selected', tab.dataset.type === type ? 'true' : 'false');
     });
-    els.hintEpsilon.classList.toggle('hidden', type !== 'EPSILON_NFA');
-    els.actionConvert.classList.toggle('hidden', type === 'DFA');
-    els.actionMinimize.classList.toggle('hidden', type !== 'DFA');
-    if (resetTransitions && !wasSameType) {
-      state.transitions = {};
-    }
+    els.hintEpsilon.hidden = type !== 'EPSILON_NFA';
+    els.actionConvert.hidden = type === 'DFA';
+    els.actionMinimize.hidden = type !== 'DFA';
+    if (resetTransitions && !wasSameType) state.transitions = {};
     renderTable();
+    renderEyebrow();
+  }
+
+  function symbolsForCurrentType() {
+    const base = [...state.alphabet];
+    if (state.type === 'EPSILON_NFA') base.push(EPSILON);
+    return base;
+  }
+
+  function renderEyebrow() {
+    els.typeEyebrow.textContent = TYPE_NAMES[state.type];
+    const symbols = symbolsForCurrentType();
+    const sCount = state.states.length;
+    const aCount = symbols.length;
+    els.typeStats.textContent = `${sCount} state${sCount === 1 ? '' : 's'}, ${aCount} symbol${aCount === 1 ? '' : 's'}`;
   }
 
   function readDefinitionFromForm() {
@@ -113,39 +133,43 @@ export function createWorkspace({ storage, user, onSignOut }) {
         if (!raw) continue;
         symMap[symbol] = state.type === 'DFA' ? raw : parseTargets(raw);
       }
-      if (Object.keys(symMap).length > 0) {
-        transitions[fromState] = symMap;
-      }
+      if (Object.keys(symMap).length > 0) transitions[fromState] = symMap;
     }
     state.transitions = transitions;
-  }
-
-  function symbolsForCurrentType() {
-    const base = [...state.alphabet];
-    if (state.type === 'EPSILON_NFA') base.push(EPSILON);
-    return base;
   }
 
   function renderTable() {
     const symbols = symbolsForCurrentType();
     if (state.states.length === 0 || state.alphabet.length === 0) {
-      els.transitionEmpty.classList.remove('hidden');
-      els.transitionWrap.classList.add('hidden');
-      els.tableStatusText.textContent =
-        state.states.length === 0 ? 'No states yet' : 'No alphabet yet';
+      els.transitionEmpty.hidden = false;
+      els.transitionWrap.hidden = true;
+      els.tableStatus.textContent = state.states.length === 0 ? 'No states yet' : 'No alphabet yet';
+      renderEyebrow();
       return;
     }
-    els.transitionEmpty.classList.add('hidden');
-    els.transitionWrap.classList.remove('hidden');
+    els.transitionEmpty.hidden = true;
+    els.transitionWrap.hidden = false;
 
     const thead = $('thead', els.transitionTable);
     const headRow = document.createElement('tr');
-    headRow.innerHTML = `<th class="px-3 py-2 text-left font-medium" style="color: var(--color-ink-muted)">State \\ Symbol</th>`;
+    const corner = document.createElement('th');
+    corner.textContent = 'δ';
+    corner.style.fontFamily = 'var(--font-mono)';
+    corner.style.fontSize = '0.8125rem';
+    corner.style.fontWeight = '500';
+    corner.style.color = 'var(--color-ink-muted)';
+    corner.style.textTransform = 'none';
+    corner.style.letterSpacing = '0';
+    headRow.appendChild(corner);
     for (const symbol of symbols) {
       const th = document.createElement('th');
-      th.className = 'px-3 py-2 text-left font-mono text-xs font-medium';
-      th.style.color = 'var(--color-ink-muted)';
       th.textContent = symbol;
+      th.style.fontFamily = 'var(--font-mono)';
+      th.style.textTransform = 'none';
+      th.style.letterSpacing = '0';
+      th.style.fontSize = '0.8125rem';
+      th.style.color = 'var(--color-ink)';
+      th.style.fontWeight = '500';
       headRow.appendChild(th);
     }
     thead.innerHTML = '';
@@ -156,27 +180,22 @@ export function createWorkspace({ storage, user, onSignOut }) {
     for (const fromState of state.states) {
       const row = document.createElement('tr');
       row.dataset.rowState = fromState;
-      row.className = 'border-t';
-      row.style.borderColor = 'var(--color-border)';
       const labelCell = document.createElement('td');
-      labelCell.className = 'px-3 py-2 align-top font-mono text-sm font-medium';
+      labelCell.className = 'matrix__row-head';
       const isStart = fromState === state.startState;
       const isAccept = state.acceptStates.includes(fromState);
-      labelCell.innerHTML = `
-        <div class="flex items-center gap-1.5">
-          <span>${escapeHtml(fromState)}</span>
-          ${isStart ? '<span class="chip chip-accent text-[10px] !py-0.5">start</span>' : ''}
-          ${isAccept ? '<span class="chip chip-success text-[10px] !py-0.5">accept</span>' : ''}
-        </div>`;
+      const marks = [];
+      if (isStart) marks.push('<span class="pill pill--start">start</span>');
+      if (isAccept) marks.push('<span class="pill pill--accept">accept</span>');
+      labelCell.innerHTML = `<span style="display:inline-flex; align-items:center; gap:8px">${escapeHtml(fromState)}${marks.length ? ' ' + marks.join(' ') : ''}</span>`;
       row.appendChild(labelCell);
 
       for (const symbol of symbols) {
         const td = document.createElement('td');
-        td.className = 'px-2 py-1.5 align-top';
         const input = document.createElement('input');
-        input.className = 'input input-mono text-xs !py-1.5 min-w-[80px]';
+        input.className = 'matrix__cell-input';
         input.dataset.symbol = symbol;
-        input.placeholder = state.type === 'DFA' ? '—' : symbol === EPSILON ? 'q1, q2' : '—';
+        input.placeholder = state.type === 'DFA' ? '∅' : symbol === EPSILON ? 'q1, q2' : '∅';
         const existing = state.transitions[fromState]?.[symbol];
         if (Array.isArray(existing)) input.value = existing.join(', ');
         else if (existing) input.value = existing;
@@ -186,14 +205,8 @@ export function createWorkspace({ storage, user, onSignOut }) {
       tbody.appendChild(row);
     }
 
-    els.tableStatusText.textContent = `${state.states.length} state${state.states.length === 1 ? '' : 's'} × ${symbols.length} symbol${symbols.length === 1 ? '' : 's'}`;
-  }
-
-  function escapeHtml(s) {
-    return String(s).replace(
-      /[&<>"']/g,
-      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
-    );
+    els.tableStatus.textContent = `${state.states.length}×${symbols.length} cells`;
+    renderEyebrow();
   }
 
   function buildAutomaton() {
@@ -211,40 +224,35 @@ export function createWorkspace({ storage, user, onSignOut }) {
   }
 
   function showError(message) {
-    els.generalError.textContent = message;
-    els.generalError.style.background = 'var(--color-danger-soft)';
-    els.generalError.style.color = 'oklch(0.4 0.2 25)';
-    els.generalError.style.border = '1px solid oklch(0.85 0.08 25)';
-    els.generalError.classList.remove('hidden');
+    els.generalError.textContent = `error: ${message}`;
+    els.generalError.style.display = 'block';
   }
-
   function clearError() {
-    els.generalError.classList.add('hidden');
+    els.generalError.style.display = 'none';
     els.generalError.textContent = '';
   }
 
   function renderTestResult({ accepted, input, detail, trace }) {
-    els.testResult.classList.remove('hidden');
-    els.testResultInput.textContent = input === '' ? 'ε (empty string)' : `"${input}"`;
-    els.testResultChip.className = accepted ? 'chip chip-success' : 'chip chip-danger';
-    els.testResultChip.innerHTML = accepted
-      ? '<i data-lucide="check" style="font-size: 13px"></i>Accepted'
-      : '<i data-lucide="x" style="font-size: 13px"></i>Rejected';
+    els.testResult.hidden = false;
+    els.testResultInput.textContent = input === '' ? 'ε  (empty string)' : `"${input}"`;
+    els.testResultChip.className = accepted
+      ? 'pill pill--accept-result'
+      : 'pill pill--reject-result';
+    els.testResultChip.textContent = accepted ? 'accepted' : 'rejected';
     els.testResultDetail.textContent = detail ?? '';
-    if (trace?.steps) {
-      els.testTrace.classList.remove('hidden');
+    if (trace?.steps && trace.steps.length > 1) {
+      els.testTrace.hidden = false;
       els.testTrace.innerHTML = trace.steps
         .map((s, i) =>
           i === 0
-            ? `<span class="chip text-[11px]">${escapeHtml(s.state)}</span>`
-            : `<span class="mx-1.5" style="color: var(--color-ink-subtle)">—${escapeHtml(s.symbol)}→</span><span class="chip text-[11px]">${escapeHtml(s.state)}</span>`
+            ? `<span class="state">${escapeHtml(s.state)}</span>`
+            : `<span class="arrow">—${escapeHtml(s.symbol)}→</span><span class="state">${escapeHtml(s.state)}</span>`
         )
         .join('');
     } else {
-      els.testTrace.classList.add('hidden');
+      els.testTrace.hidden = true;
       els.testTrace.innerHTML = '';
     }
-    renderIcons(els.testResult);
   }
 
   function runTest() {
@@ -258,10 +266,10 @@ export function createWorkspace({ storage, user, onSignOut }) {
           accepted: t.accepted,
           input,
           detail: t.accepted
-            ? `Ended in ${t.finalState}`
+            ? `Halted in ${t.finalState} ∈ F`
             : t.reason
-              ? `Rejected: ${t.reason}`
-              : `Ended in non-accepting state`,
+              ? t.reason
+              : `Halted outside F`,
           trace: { steps: t.steps },
         });
       } else {
@@ -269,7 +277,9 @@ export function createWorkspace({ storage, user, onSignOut }) {
         renderTestResult({
           accepted,
           input,
-          detail: accepted ? 'Some computation path accepts.' : 'No path accepts.',
+          detail: accepted
+            ? 'At least one computation path accepts.'
+            : 'No computation path accepts.',
         });
       }
     } catch (err) {
@@ -288,7 +298,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
       if (state.type === 'DFA') return;
       const dfa = nfaToDfa(nfa);
       loadFromDefinition({ ...dfa.toJSON(), name: `${state.name || 'NFA'} → DFA` }, 'DFA');
-      flashStatus('Converted to equivalent DFA');
+      flashStatus('subset construction complete');
     } catch (err) {
       showError(err?.message ?? 'Conversion failed');
     }
@@ -300,24 +310,22 @@ export function createWorkspace({ storage, user, onSignOut }) {
       const dfa = buildAutomaton();
       if (!(dfa instanceof DFA)) return;
       const min = minimizeDfa(dfa);
-      loadFromDefinition({ ...min.toJSON(), name: `${state.name || 'DFA'} (minimized)` }, 'DFA');
-      flashStatus(`Minimized to ${min.states.size} state${min.states.size === 1 ? '' : 's'}`);
+      loadFromDefinition({ ...min.toJSON(), name: `${state.name || 'DFA'} (minimal)` }, 'DFA');
+      flashStatus(`minimized to ${min.states.size} state${min.states.size === 1 ? '' : 's'}`);
     } catch (err) {
       showError(err?.message ?? 'Minimization failed');
     }
   }
 
+  let flashTimer = null;
   function flashStatus(message) {
-    els.definitionStatus.innerHTML = `<i data-lucide="check" style="font-size: 13px"></i><span>${escapeHtml(message)}</span>`;
-    els.definitionStatus.classList.add('chip-success');
-    els.definitionStatus.classList.remove('chip');
-    renderIcons(els.definitionStatus);
-    setTimeout(() => {
-      els.definitionStatus.className = 'chip';
-      els.definitionStatus.innerHTML =
-        '<i data-lucide="circle-help" style="font-size: 13px"></i><span>Edit fields below</span>';
-      renderIcons(els.definitionStatus);
-    }, 2500);
+    els.definitionStatus.textContent = message;
+    els.definitionStatus.style.color = 'var(--color-accent)';
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => {
+      els.definitionStatus.textContent = '';
+      els.definitionStatus.style.color = '';
+    }, 2400);
   }
 
   function loadFromDefinition(def, type) {
@@ -348,7 +356,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
       state.type
     );
     els.test.value = '';
-    els.testResult.classList.add('hidden');
+    els.testResult.hidden = true;
     clearError();
   }
 
@@ -361,26 +369,29 @@ export function createWorkspace({ storage, user, onSignOut }) {
     const items = await storage.list(user.id);
     els.libraryCount.textContent = String(items.length);
     if (items.length === 0) {
-      els.libraryEmpty.classList.remove('hidden');
+      els.libraryEmpty.hidden = false;
       els.libraryList.innerHTML = '';
       return;
     }
-    els.libraryEmpty.classList.add('hidden');
+    els.libraryEmpty.hidden = true;
     els.libraryList.innerHTML = items
-      .map(
-        (item) => `
-        <div class="group flex items-center gap-2 rounded-[10px] px-3 py-2 transition-colors hover:bg-[color:var(--color-surface-2)]" data-item="${item.id}">
-          <button class="flex-1 text-left" data-action="load">
-            <span class="block text-sm font-medium truncate">${escapeHtml(item.name)}</span>
-            <span class="block text-[11px]" style="color: var(--color-ink-subtle)">
-              ${escapeHtml(item.definition.type ?? 'DFA')} · ${item.definition.states?.length ?? 0} states · ${new Date(item.updatedAt).toLocaleDateString()}
-            </span>
-          </button>
-          <button class="icon-btn opacity-0 group-hover:opacity-100" data-action="delete" aria-label="Delete">
-            <i data-lucide="trash-2" style="font-size: 14px"></i>
-          </button>
-        </div>`
-      )
+      .map((item) => {
+        const date = new Date(item.updatedAt);
+        const stamp = `${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+        return `
+          <div class="library__item" data-item="${item.id}">
+            <div style="min-width: 0; flex: 1">
+              <button class="library__title" data-action="load">${escapeHtml(item.name)}</button>
+              <div class="library__meta">
+                ${escapeHtml(item.definition.type ?? 'DFA')} · ${item.definition.states?.length ?? 0}q · ${stamp}
+              </div>
+            </div>
+            <button class="library__remove" data-action="delete" aria-label="Delete">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+        `;
+      })
       .join('');
     renderIcons(els.libraryList);
 
@@ -402,7 +413,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
     try {
       const automaton = buildAutomaton();
       if (!state.name) {
-        showError('Name your automaton before saving.');
+        showError('name the automaton before saving');
         return;
       }
       const definition = automaton.toJSON();
@@ -412,7 +423,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
         definition,
       });
       state.activeId = saved.id;
-      flashStatus('Saved');
+      flashStatus('saved');
       await refreshLibrary();
     } catch (err) {
       showError(err?.message ?? 'Save failed');
@@ -444,10 +455,10 @@ export function createWorkspace({ storage, user, onSignOut }) {
 
   if (user?.primaryEmailAddress?.emailAddress) {
     els.userEmail.textContent = user.primaryEmailAddress.emailAddress;
-    els.userEmail.classList.remove('hidden');
+    els.userEmail.hidden = false;
   }
 
-  // Initial state — load the DFA example so the UI isn't blank
+  // Initial load
   loadExample();
   refreshLibrary();
   renderIcons();

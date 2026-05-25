@@ -3,102 +3,95 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ffffff" />
-    <title>Sign in — Automata Studio</title>
+    <meta name="theme-color" content="#fbf7ed" />
+    <title>Sign in · Automata Studio</title>
     <meta
       name="description"
-      content="Sign in to Automata Studio — a clean, modern tool for building and testing DFAs, NFAs and ε-NFAs."
+      content="A workbench for finite automata. Design, test, convert and minimize DFA, NFA and ε-NFA."
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
     />
   </head>
-  <body class="min-h-dvh">
-    <main class="relative min-h-dvh">
-      <div
-        aria-hidden="true"
-        class="grid-bg absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
-      ></div>
-
-      <div class="relative flex min-h-dvh flex-col">
-        <header class="container-app flex items-center justify-between py-6">
-          <a href="/auth.html" class="flex items-center gap-2 font-semibold tracking-tight">
-            <span
-              class="inline-flex h-8 w-8 items-center justify-center rounded-[8px]"
-              style="background: var(--color-accent); color: white"
-            >
-              <i data-lucide="workflow" style="font-size: 18px"></i>
-            </span>
-            <span>Automata Studio</span>
+  <body>
+    <div class="auth-frame">
+      <header class="page topbar">
+        <a href="/auth.html" class="wordmark"> Automata Studio<span class="wordmark__glyph">δ</span> </a>
+        <div class="topbar__meta">
+          <a href="https://github.com" class="btn btn--ghost btn--sm" target="_blank" rel="noreferrer noopener">
+            Source
           </a>
-          <a
-            href="https://github.com"
-            class="btn btn-ghost text-xs"
-            target="_blank"
-            rel="noreferrer noopener"
-            aria-label="Open source on GitHub"
-          >
-            <i data-lucide="github" style="font-size: 14px"></i>
-            <span class="hidden sm:inline">GitHub</span>
-          </a>
-        </header>
-
-        <div class="container-app flex flex-1 items-center justify-center pb-16">
-          <section class="card w-full max-w-md" data-auth-card>
-            <div class="card-body p-8">
-              <div class="mb-6 flex flex-col items-center text-center">
-                <span
-                  class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-[12px]"
-                  style="background: var(--color-accent-soft); color: var(--color-accent-hover)"
-                >
-                  <i data-lucide="shield-check" style="font-size: 22px"></i>
-                </span>
-                <h1 class="text-2xl font-semibold tracking-tight text-balance">Welcome to Automata Studio</h1>
-                <p class="mt-2 text-sm text-pretty" style="color: var(--color-ink-muted)">
-                  Sign in to build, test and save deterministic and non-deterministic finite automata.
-                </p>
-              </div>
-
-              <button id="google-signin" class="btn btn-secondary w-full !py-2.5 text-sm font-semibold" type="button">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    fill="#4285F4"
-                    d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.44c-.28 1.4-1.07 2.59-2.26 3.39v2.82h3.65c2.13-1.97 3.36-4.86 3.36-8.45z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.65-2.82c-1.01.68-2.31 1.09-4.28 1.09-3.29 0-6.08-2.22-7.07-5.21H1.16v2.92C3.14 21.3 7.27 24 12 24z"
-                  />
-                  <path
-                    fill="#FBBC04"
-                    d="M4.93 14.15c-.25-.75-.39-1.55-.39-2.4s.14-1.65.39-2.4V6.43H1.16C.42 7.96 0 9.93 0 12s.42 4.04 1.16 5.57l3.77-3.42z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 4.75c1.77 0 3.36.61 4.62 1.81l3.24-3.24C17.95 1.19 15.24 0 12 0 7.27 0 3.14 2.7 1.16 6.43l3.77 2.92C5.92 6.97 8.71 4.75 12 4.75z"
-                  />
-                </svg>
-                <span>Continue with Google</span>
-              </button>
-
-              <div id="auth-error" class="mt-4 hidden rounded-[10px] px-3 py-2.5 text-sm" role="alert"></div>
-
-              <p class="mt-6 text-center text-xs" style="color: var(--color-ink-subtle)">
-                By continuing, you agree that automaton definitions you save are stored in your browser.
-              </p>
-            </div>
-          </section>
         </div>
+      </header>
 
-        <footer class="container-app pb-6 text-center text-xs" style="color: var(--color-ink-subtle)">
-          Automata Studio — built for students, educators, and anyone curious about formal languages.
-        </footer>
-      </div>
-    </main>
+      <main class="page" style="display: grid; place-items: center; padding-top: 64px; padding-bottom: 64px">
+        <section class="auth-form">
+          <p class="eyebrow" style="margin-bottom: 18px">A workbench for finite automata</p>
+          <h1 class="auth-mark">Sit down,<br />formalize<br />a language.</h1>
+          <div class="auth-mark__rule" aria-hidden="true"></div>
+          <p class="auth-epigraph">M&nbsp;=&nbsp;(Q,&nbsp;Σ,&nbsp;δ,&nbsp;q<sub>0</sub>,&nbsp;F)</p>
+          <p class="deck" style="margin-top: 20px">
+            Build deterministic and non-deterministic finite automata, test them against inputs, run subset construction
+            and minimize. Your saved machines stay with your account.
+          </p>
+
+          <div style="margin-top: 36px">
+            <button id="google-signin" class="btn-google" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="#fbf7ed"
+                  d="M21.6 12.227c0-.71-.06-1.39-.18-2.046H12v3.869h5.385a4.6 4.6 0 0 1-2.001 3.022v2.51h3.236c1.892-1.74 2.98-4.305 2.98-7.355z"
+                  opacity=".95"
+                />
+                <path
+                  fill="#fbf7ed"
+                  d="M12 22c2.7 0 4.964-.89 6.62-2.418l-3.236-2.51c-.896.6-2.04.957-3.384.957-2.604 0-4.808-1.755-5.594-4.116H3.062v2.586A9.998 9.998 0 0 0 12 22z"
+                  opacity=".7"
+                />
+                <path
+                  fill="#fbf7ed"
+                  d="M6.406 13.913a5.998 5.998 0 0 1 0-3.826V7.5H3.062a10 10 0 0 0 0 9z"
+                  opacity=".55"
+                />
+                <path
+                  fill="#fbf7ed"
+                  d="M12 5.957c1.47 0 2.787.506 3.823 1.498l2.866-2.866C16.96 2.99 14.697 2 12 2A9.998 9.998 0 0 0 3.062 7.5l3.344 2.587C7.192 7.712 9.396 5.957 12 5.957z"
+                  opacity=".4"
+                />
+              </svg>
+              Continue with Google
+            </button>
+            <p id="auth-error" class="note" style="margin-top: 14px; display: none" role="alert"></p>
+            <p style="margin-top: 14px; font-size: 0.75rem; color: var(--color-ink-faint)">
+              Sign-in stores a session cookie. No other personal data leaves your browser.
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <footer
+        class="page"
+        style="
+          padding-top: 24px;
+          padding-bottom: 24px;
+          font-size: 0.75rem;
+          color: var(--color-ink-faint);
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          border-top: 1px solid var(--color-rule);
+        "
+      >
+        <span class="wordmark" style="font-size: 0.8125rem">
+          Automata Studio<span class="wordmark__glyph">δ</span>
+        </span>
+        <span>For students and educators of formal language theory.</span>
+      </footer>
+    </div>
 
     <script type="module" src="/src/auth.entry.js"></script>
   </body>
