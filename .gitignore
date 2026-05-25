@@ -40,3 +40,4 @@ logs/
 .playwright-mcp/
 qa-*.png
 qa-*.jpg
+prod-*.png
