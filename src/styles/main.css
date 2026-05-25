@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+
+  --color-canvas: oklch(0.98 0.005 240);
+  --color-surface: oklch(1 0 0);
+  --color-surface-2: oklch(0.97 0.006 240);
+  --color-border: oklch(0.9 0.008 240);
+  --color-border-strong: oklch(0.82 0.012 240);
+  --color-ink: oklch(0.2 0.02 250);
+  --color-ink-muted: oklch(0.45 0.015 250);
+  --color-ink-subtle: oklch(0.6 0.012 250);
+
+  --color-accent: oklch(0.56 0.18 265);
+  --color-accent-hover: oklch(0.48 0.2 265);
+  --color-accent-soft: oklch(0.95 0.03 265);
+  --color-accent-ring: oklch(0.7 0.15 265);
+
+  --color-success: oklch(0.65 0.16 145);
+  --color-success-soft: oklch(0.94 0.04 145);
+  --color-danger: oklch(0.58 0.2 25);
+  --color-danger-soft: oklch(0.95 0.04 25);
+  --color-warning: oklch(0.72 0.16 75);
+
+  --radius-card: 14px;
+  --radius-control: 10px;
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.04), 0 4px 12px oklch(0 0 0 / 0.04);
+  --shadow-hover: 0 1px 2px oklch(0 0 0 / 0.05), 0 8px 24px oklch(0 0 0 / 0.08);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    background: var(--color-canvas);
+  }
+
+  body {
+    @apply text-[color:var(--color-ink)] antialiased;
+    font-family: var(--font-sans);
+    font-feature-settings:
+      "cv11" on,
+      "ss01" on,
+      "ss03" on;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--color-accent-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-hover);
+  }
+}
+
+@layer components {
+  .container-app {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .card-header {
+    @apply flex items-center justify-between gap-3 px-5 py-4;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .card-title {
+    @apply text-sm font-semibold tracking-tight;
+    color: var(--color-ink);
+  }
+
+  .card-body {
+    @apply px-5 py-5;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-[10px] px-3.5 py-2 text-sm font-medium transition-all;
+    border: 1px solid transparent;
+    line-height: 1;
+  }
+  .btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--color-accent);
+    color: white;
+    box-shadow: 0 1px 0 oklch(0 0 0 / 0.06) inset;
+  }
+  .btn-primary:not([disabled]):hover {
+    background: var(--color-accent-hover);
+  }
+  .btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    border-color: var(--color-border-strong);
+  }
+  .btn-secondary:not([disabled]):hover {
+    background: var(--color-surface-2);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-ink-muted);
+  }
+  .btn-ghost:not([disabled]):hover {
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+  }
+  .btn-danger-ghost {
+    background: transparent;
+    color: var(--color-danger);
+  }
+  .btn-danger-ghost:not([disabled]):hover {
+    background: var(--color-danger-soft);
+  }
+
+  .input {
+    @apply block w-full rounded-[10px] px-3 py-2 text-sm transition-colors;
+    background: var(--color-surface);
+    color: var(--color-ink);
+    border: 1px solid var(--color-border-strong);
+  }
+  .input::placeholder {
+    color: var(--color-ink-subtle);
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 4px var(--color-accent-soft);
+  }
+  .input[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+  .input-mono {
+    font-family: var(--font-mono);
+  }
+
+  .label {
+    @apply mb-1.5 block text-xs font-medium;
+    color: var(--color-ink-muted);
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  .hint {
+    @apply mt-1 text-xs;
+    color: var(--color-ink-subtle);
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
+    background: var(--color-surface-2);
+    color: var(--color-ink-muted);
+    border: 1px solid var(--color-border);
+  }
+  .chip-success {
+    background: var(--color-success-soft);
+    color: oklch(0.4 0.16 145);
+    border-color: oklch(0.85 0.06 145);
+  }
+  .chip-danger {
+    background: var(--color-danger-soft);
+    color: oklch(0.4 0.2 25);
+    border-color: oklch(0.85 0.08 25);
+  }
+  .chip-accent {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-hover);
+    border-color: oklch(0.86 0.06 265);
+  }
+
+  .tab {
+    @apply inline-flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-sm font-medium transition-colors;
+    color: var(--color-ink-muted);
+  }
+  .tab:hover {
+    color: var(--color-ink);
+    background: var(--color-surface-2);
+  }
+  .tab[aria-selected="true"] {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.06);
+  }
+
+  .icon-btn {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-[8px] transition-colors;
+    color: var(--color-ink-muted);
+  }
+  .icon-btn:hover {
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, oklch(0 0 0 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(0 0 0 / 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .scrollarea {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+
+  .lucide {
+    width: 1em;
+    height: 1em;
+    stroke-width: 1.75;
+    flex-shrink: 0;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+}

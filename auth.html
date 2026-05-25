@@ -1,392 +1,105 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DFA Simulator - Authentication</title>
-    <!-- Bootstrap CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
+    <meta name="theme-color" content="#ffffff" />
+    <title>Sign in — Automata Studio</title>
+    <meta
+      name="description"
+      content="Sign in to Automata Studio — a clean, modern tool for building and testing DFAs, NFAs and ε-NFAs."
     />
-    <!-- Font Awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-    />
-    <!-- SweetAlert2 -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
-    />
-    <!-- Google Fonts -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     />
-    <!-- Animate.css -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
-    <!-- Custom CSS -->
-    <link href="css/styles.css" rel="stylesheet" />
-    <link href="css/auth.css" rel="stylesheet" />
   </head>
-  <body>
-    <div class="auth-container">
-      <!-- Left panel with branding and features -->
-      <div class="auth-left-panel">
-        <div class="logo-wrapper">
-          <div class="logo-icon-wrapper animate__animated animate__fadeIn">
-            <i class="fas fa-project-diagram"></i>
-          </div>
-        </div>
+  <body class="min-h-dvh">
+    <main class="relative min-h-dvh">
+      <div
+        aria-hidden="true"
+        class="grid-bg absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
+      ></div>
 
-        <div
-          class="brand-content animate__animated animate__fadeInUp animate__delay-1s"
-        >
-          <h1>DFA Simulator</h1>
-          <p class="tagline">
-            Visualize, create, and test your automata with ease
-          </p>
-        </div>
-
-        <!-- Professional hero section -->
-        <div
-          class="professional-hero animate__animated animate__fadeInUp animate__delay-2s"
-        >
-          <div class="hero-content">
-            <div class="hero-icon">
-              <i class="fas fa-sitemap"></i>
-            </div>
-            <h2>Deterministic Finite Automata</h2>
-            <p>
-              Design, simulate and analyze automata with powerful visualization
-              tools
-            </p>
-
-            <ul class="feature-checklist">
-              <li>
-                <i class="fas fa-check-circle"></i> Create complex state
-                machines
-              </li>
-              <li>
-                <i class="fas fa-check-circle"></i> Test string acceptance in
-                real-time
-              </li>
-              <li>
-                <i class="fas fa-check-circle"></i> Save and share your automata
-                models
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="feature-list">
-          <div class="feature-item">
-            <i class="fas fa-cloud"></i>
-            <div class="feature-text">
-              <h3>Cloud Storage</h3>
-              <p>Save your DFAs to access from anywhere</p>
-            </div>
-          </div>
-
-          <div class="feature-item">
-            <i class="fas fa-share-alt"></i>
-            <div class="feature-text">
-              <h3>Share & Collaborate</h3>
-              <p>Work with others on complex automata</p>
-            </div>
-          </div>
-
-          <div class="feature-item">
-            <i class="fas fa-history"></i>
-            <div class="feature-text">
-              <h3>Version History</h3>
-              <p>Track changes to your DFA designs</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer with just copyright -->
-        <div class="left-panel-footer">
-          <div class="copyright-text">© 2025 DFA Simulator</div>
-        </div>
-      </div>
-
-      <!-- Right panel with auth form -->
-      <div class="auth-right-panel">
-        <div class="auth-form-container animate__animated animate__fadeIn">
-          <div class="auth-header">
-            <h2>Welcome back</h2>
-            <p>Please enter your details to sign in</p>
-          </div>
-
-          <!-- Auth tabs -->
-          <ul class="nav nav-tabs auth-tabs" id="authTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button
-                class="nav-link tab-btn active"
-                id="login-tab"
-                data-bs-toggle="tab"
-                data-bs-target="#login-tab-pane"
-                type="button"
-                role="tab"
-                aria-controls="login-tab-pane"
-                aria-selected="true"
-              >
-                Login
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button
-                class="nav-link tab-btn"
-                id="signup-tab"
-                data-bs-toggle="tab"
-                data-bs-target="#signup-tab-pane"
-                type="button"
-                role="tab"
-                aria-controls="signup-tab-pane"
-                aria-selected="false"
-              >
-                Sign Up
-              </button>
-            </li>
-          </ul>
-
-          <!-- Tab content -->
-          <div class="tab-content" id="authTabsContent">
-            <!-- Login form -->
-            <div
-              class="tab-pane fade show active"
-              id="login-tab-pane"
-              role="tabpanel"
-              aria-labelledby="login-tab"
+      <div class="relative flex min-h-dvh flex-col">
+        <header class="container-app flex items-center justify-between py-6">
+          <a href="/auth.html" class="flex items-center gap-2 font-semibold tracking-tight">
+            <span
+              class="inline-flex h-8 w-8 items-center justify-center rounded-[8px]"
+              style="background: var(--color-accent); color: white"
             >
-              <form id="login-form">
-                <div class="form-group">
-                  <label for="login-email">Email</label>
-                  <div class="input-field">
-                    <i class="fas fa-envelope"></i>
-                    <input
-                      type="email"
-                      id="login-email"
-                      placeholder="Enter your email"
-                      required
-                    />
-                  </div>
-                </div>
+              <i data-lucide="workflow" style="font-size: 18px"></i>
+            </span>
+            <span>Automata Studio</span>
+          </a>
+          <a
+            href="https://github.com"
+            class="btn btn-ghost text-xs"
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="Open source on GitHub"
+          >
+            <i data-lucide="github" style="font-size: 14px"></i>
+            <span class="hidden sm:inline">GitHub</span>
+          </a>
+        </header>
 
-                <div class="form-group">
-                  <div class="label-row">
-                    <label for="login-password">Password</label>
-                    <a href="#" class="forgot-link">Forgot password?</a>
-                  </div>
-                  <div class="input-field">
-                    <i class="fas fa-lock"></i>
-                    <input
-                      type="password"
-                      id="login-password"
-                      placeholder="Enter your password"
-                      required
-                    />
-                    <i class="fas fa-eye-slash toggle-password"></i>
-                  </div>
-                </div>
+        <div class="container-app flex flex-1 items-center justify-center pb-16">
+          <section class="card w-full max-w-md" data-auth-card>
+            <div class="card-body p-8">
+              <div class="mb-6 flex flex-col items-center text-center">
+                <span
+                  class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-[12px]"
+                  style="background: var(--color-accent-soft); color: var(--color-accent-hover)"
+                >
+                  <i data-lucide="shield-check" style="font-size: 22px"></i>
+                </span>
+                <h1 class="text-2xl font-semibold tracking-tight text-balance">Welcome to Automata Studio</h1>
+                <p class="mt-2 text-sm text-pretty" style="color: var(--color-ink-muted)">
+                  Sign in to build, test and save deterministic and non-deterministic finite automata.
+                </p>
+              </div>
 
-                <div class="remember-me">
-                  <input type="checkbox" id="remember-me" />
-                  <label for="remember-me">Remember me for 30 days</label>
-                </div>
+              <button id="google-signin" class="btn btn-secondary w-full !py-2.5 text-sm font-semibold" type="button">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="#4285F4"
+                    d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.44c-.28 1.4-1.07 2.59-2.26 3.39v2.82h3.65c2.13-1.97 3.36-4.86 3.36-8.45z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.65-2.82c-1.01.68-2.31 1.09-4.28 1.09-3.29 0-6.08-2.22-7.07-5.21H1.16v2.92C3.14 21.3 7.27 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC04"
+                    d="M4.93 14.15c-.25-.75-.39-1.55-.39-2.4s.14-1.65.39-2.4V6.43H1.16C.42 7.96 0 9.93 0 12s.42 4.04 1.16 5.57l3.77-3.42z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.36.61 4.62 1.81l3.24-3.24C17.95 1.19 15.24 0 12 0 7.27 0 3.14 2.7 1.16 6.43l3.77 2.92C5.92 6.97 8.71 4.75 12 4.75z"
+                  />
+                </svg>
+                <span>Continue with Google</span>
+              </button>
 
-                <button type="submit" class="btn-sign-in" id="login-button">
-                  <i class="fas fa-sign-in-alt me-2"></i> Sign in
-                </button>
+              <div id="auth-error" class="mt-4 hidden rounded-[10px] px-3 py-2.5 text-sm" role="alert"></div>
 
-                <div class="divider">
-                  <span>or continue with</span>
-                </div>
-
-                <div class="social-login">
-                  <button type="button" class="btn-google" id="google-login">
-                    <img
-                      src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                      alt="Google"
-                      width="20"
-                      height="20"
-                    />
-                    Sign in with Google
-                  </button>
-                </div>
-
-                <div class="social-login-grid">
-                  <button type="button" class="btn-social" id="microsoft-login">
-                    <i class="fab fa-microsoft"></i>
-                    <span class="tooltip-text">Microsoft</span>
-                  </button>
-                  <button type="button" class="btn-social" id="apple-login">
-                    <i class="fab fa-apple"></i>
-                    <span class="tooltip-text">Apple</span>
-                  </button>
-                  <button type="button" class="btn-social" id="phone-login">
-                    <i class="fas fa-phone"></i>
-                    <span class="tooltip-text">Phone</span>
-                  </button>
-                </div>
-              </form>
+              <p class="mt-6 text-center text-xs" style="color: var(--color-ink-subtle)">
+                By continuing, you agree that automaton definitions you save are stored in your browser.
+              </p>
             </div>
-
-            <!-- Sign Up form -->
-            <div
-              class="tab-pane fade"
-              id="signup-tab-pane"
-              role="tabpanel"
-              aria-labelledby="signup-tab"
-            >
-              <form id="signup-form">
-                <div class="form-group">
-                  <label for="signup-email">Email</label>
-                  <div class="input-field">
-                    <i class="fas fa-envelope"></i>
-                    <input
-                      type="email"
-                      id="signup-email"
-                      placeholder="Enter your email"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label for="signup-password">Password</label>
-                  <div class="input-field">
-                    <i class="fas fa-lock"></i>
-                    <input
-                      type="password"
-                      id="signup-password"
-                      placeholder="Create a password"
-                      required
-                    />
-                    <i class="fas fa-eye-slash toggle-password"></i>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label for="signup-confirm-password">Confirm Password</label>
-                  <div class="input-field">
-                    <i class="fas fa-lock"></i>
-                    <input
-                      type="password"
-                      id="signup-confirm-password"
-                      placeholder="Confirm your password"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <button type="submit" class="btn-sign-in" id="signup-button">
-                  <i class="fas fa-user-plus me-2"></i> Create account
-                </button>
-
-                <div class="divider">
-                  <span>or continue with</span>
-                </div>
-
-                <div class="social-login">
-                  <button type="button" class="btn-google" id="google-signup">
-                    <img
-                      src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                      alt="Google"
-                      width="20"
-                      height="20"
-                    />
-                    Sign up with Google
-                  </button>
-                </div>
-
-                <div class="social-login-grid">
-                  <button
-                    type="button"
-                    class="btn-social"
-                    id="microsoft-signup"
-                  >
-                    <i class="fab fa-microsoft"></i>
-                    <span class="tooltip-text">Microsoft</span>
-                  </button>
-                  <button type="button" class="btn-social" id="apple-signup">
-                    <i class="fab fa-apple"></i>
-                    <span class="tooltip-text">Apple</span>
-                  </button>
-                  <button type="button" class="btn-social" id="phone-signup">
-                    <i class="fas fa-phone"></i>
-                    <span class="tooltip-text">Phone</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          </section>
         </div>
+
+        <footer class="container-app pb-6 text-center text-xs" style="color: var(--color-ink-subtle)">
+          Automata Studio — built for students, educators, and anyone curious about formal languages.
+        </footer>
       </div>
-    </div>
+    </main>
 
-    <!-- Attribution badge -->
-    <div class="attribution-badge">
-      <span>Crafted with</span>
-      <i class="fas fa-code"></i>
-      <span>by Automata Enthusiasts</span>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="container">
-        <p class="mb-0">
-          <i class="fas fa-project-diagram me-1"></i> Crafted with
-          <i class="fas fa-brain text-info mx-1"></i> and
-          <i class="fas fa-sparkles text-warning mx-1"></i> by Automata
-          Enthusiasts
-        </p>
-      </div>
-    </footer>
-
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- SweetAlert JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- Firebase (using version 8.x for better compatibility) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-    <!-- Firebase Configuration -->
-    <script src="./codebase/firebase-config.js"></script>
-
-    <!-- Custom Auth JS -->
-    <script src="./codebase/auth.js"></script>
-
-    <!-- Password visibility toggle -->
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const toggleButtons = document.querySelectorAll(".toggle-password");
-
-        toggleButtons.forEach((button) => {
-          button.addEventListener("click", function () {
-            const passwordInput = this.previousElementSibling;
-
-            // Toggle password visibility
-            if (passwordInput.type === "password") {
-              passwordInput.type = "text";
-              this.classList.replace("fa-eye-slash", "fa-eye");
-            } else {
-              passwordInput.type = "password";
-              this.classList.replace("fa-eye", "fa-eye-slash");
-            }
-          });
-        });
-      });
-    </script>
+    <script type="module" src="/src/auth.entry.js"></script>
   </body>
 </html>

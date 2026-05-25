@@ -1,465 +1,321 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DFA Simulator</title>
-    <!-- Bootstrap 5 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
+    <meta name="theme-color" content="#ffffff" />
+    <title>Automata Studio — DFA · NFA · ε-NFA</title>
+    <meta
+      name="description"
+      content="A clean studio for defining, testing, converting and minimizing finite automata over the web."
     />
-    <!-- Font Awesome for icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <!-- SweetAlert CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
-      rel="stylesheet"
-    />
-    <!-- Animate.css -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     />
-    <!-- AOS - Animate on Scroll -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
-    <!-- Custom CSS -->
-    <link href="css/styles.css" rel="stylesheet" />
-    <link href="css/auth.css" rel="stylesheet" />
   </head>
-  <body>
-    <!-- Header section -->
-    <div class="header-container">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-md-8">
-            <h1 class="app-title animate__animated animate__fadeIn">
-              DFA Simulator <i class="fas fa-project-diagram ms-2"></i>
-            </h1>
-            <p
-              class="app-subtitle animate__animated animate__fadeIn animate__delay-1s"
-            >
-              Deterministic Finite Automaton Visualization & Testing
-            </p>
-          </div>
-          <div class="col-md-4 text-end">
-            <span class="badge bg-light text-dark p-2 me-2">
-              <i class="fas fa-book me-1"></i> Automata Theory
-            </span>
-            <!-- User auth status -->
-            <div class="user-status-container d-inline-block">
-              <!-- Will be populated by JS -->
-              <span id="user-display"></span>
-              <button
-                id="sign-out-button"
-                class="btn btn-sm btn-outline-danger d-none"
-              >
-                <i class="fas fa-sign-out-alt"></i> Sign Out
-              </button>
-            </div>
-          </div>
+  <body class="min-h-dvh">
+    <header
+      class="sticky top-0 z-30 border-b backdrop-blur"
+      style="background: oklch(1 0 0 / 0.85); border-color: var(--color-border)"
+    >
+      <div class="container-app flex h-14 items-center justify-between gap-3">
+        <a href="/" class="flex items-center gap-2 font-semibold tracking-tight">
+          <span
+            class="inline-flex h-7 w-7 items-center justify-center rounded-[7px]"
+            style="background: var(--color-accent); color: white"
+          >
+            <i data-lucide="workflow" style="font-size: 16px"></i>
+          </span>
+          <span class="hidden sm:inline">Automata Studio</span>
+        </a>
+
+        <nav class="hidden items-center gap-1 sm:flex" aria-label="Primary">
+          <span class="chip">
+            <i data-lucide="sparkles" style="font-size: 13px"></i>
+            DFA · NFA · ε-NFA
+          </span>
+        </nav>
+
+        <div class="flex items-center gap-2">
+          <span id="user-email" class="hidden text-xs sm:inline" style="color: var(--color-ink-muted)"></span>
+          <button id="sign-out" class="btn btn-ghost text-xs" type="button">
+            <i data-lucide="log-out" style="font-size: 14px"></i>
+            <span class="hidden sm:inline">Sign out</span>
+          </button>
         </div>
       </div>
-    </div>
+    </header>
 
-    <div class="container">
-      <!-- Main content -->
-      <div class="row">
-        <!-- Form section -->
-        <div class="col-lg-8">
-          <div class="card mb-4" data-aos="fade-up" data-aos-duration="800">
-            <div class="card-header">
-              <i class="fas fa-edit"></i> Define Your DFA
-            </div>
+    <main class="container-app py-6 lg:py-8">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+        <section class="space-y-6" aria-label="Automaton workspace">
+          <!-- Hero / type tabs -->
+          <div class="card">
             <div class="card-body">
-              <form id="transition-table-form">
-                <div class="generator-controls">
-                  <div class="row">
-                    <div class="col-md-6">
-                      <label for="state-set" class="form-label"
-                        >State Set (Q):</label
-                      >
-                      <div class="input-group">
-                        <span class="input-group-text"
-                          ><i class="fas fa-circle-nodes"></i
-                        ></span>
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="state-set"
-                          placeholder="q0, q1, q2"
-                          required
-                        />
-                      </div>
-                      <div class="hint-text">
-                        Enter state identifiers separated by commas
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <label for="alphabet-set" class="form-label"
-                        >Input Alphabet (Σ):</label
-                      >
-                      <div class="input-group">
-                        <span class="input-group-text"
-                          ><i class="fas fa-font"></i
-                        ></span>
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="alphabet-set"
-                          placeholder="0, 1"
-                          required
-                        />
-                      </div>
-                      <div class="hint-text">
-                        Enter symbols separated by commas
-                      </div>
-                    </div>
-                  </div>
-                  <div class="d-grid mt-3">
-                    <button
-                      type="button"
-                      id="generate-table"
-                      class="btn btn-outline-primary"
-                    >
-                      <i class="fas fa-table me-2"></i>Generate Transition Table
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  id="transition-table-container"
-                  class="transition-table-container d-none"
-                >
-                  <p class="mb-2">
-                    <strong>Transition Function (δ):</strong> Enter the next
-                    state for each state-input pair
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h1 class="text-xl font-semibold tracking-tight sm:text-2xl">
+                    <span id="automaton-name-display">Untitled automaton</span>
+                  </h1>
+                  <p class="mt-1 text-sm" style="color: var(--color-ink-muted)">
+                    Define states, alphabet and transitions — then test strings or transform between machines.
                   </p>
-                  <div id="transition-table-wrapper"></div>
                 </div>
-
-                <div class="row mb-3 mt-4">
-                  <div class="col-md-6">
-                    <label for="initial-state" class="form-label"
-                      >Initial State (q₀):</label
-                    >
-                    <div class="input-group">
-                      <span class="input-group-text"
-                        ><i class="fas fa-play"></i
-                      ></span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="initial-state"
-                        placeholder="q0"
-                        required
-                      />
-                    </div>
-                    <div class="hint-text">
-                      Enter the starting state of the automaton
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <label for="accept-states" class="form-label"
-                      >Accept States (F):</label
-                    >
-                    <div class="input-group">
-                      <span class="input-group-text"
-                        ><i class="fas fa-flag-checkered"></i
-                      ></span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="accept-states"
-                        placeholder="q1, q2"
-                        required
-                      />
-                    </div>
-                    <div class="hint-text">
-                      Enter accepting states separated by commas
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <label for="input-string" class="form-label"
-                    >Input String (w):</label
-                  >
-                  <div class="input-group">
-                    <span class="input-group-text"
-                      ><i class="fas fa-keyboard"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="input-string"
-                      placeholder="e.g. 10110"
-                      required
-                    />
-                    <button class="btn btn-primary" type="submit">
-                      <i class="fas fa-play me-1"></i> Run DFA
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Save DFA button (visible when logged in) -->
-                <div class="d-grid gap-2 mt-3 mb-4 save-dfa-container d-none">
-                  <button
-                    type="button"
-                    class="btn btn-outline-success"
-                    id="open-save-dfa-modal"
-                  >
-                    <i class="fas fa-save me-2"></i>Save This DFA
+                <div class="flex flex-wrap items-center gap-2">
+                  <button id="action-new" class="btn btn-secondary text-xs" type="button">
+                    <i data-lucide="file-text" style="font-size: 14px"></i>
+                    New
+                  </button>
+                  <button id="action-example" class="btn btn-ghost text-xs" type="button">
+                    <i data-lucide="sparkles" style="font-size: 14px"></i>
+                    Load example
                   </button>
                 </div>
+              </div>
 
-                <!-- Hidden field for tracking transition table generation -->
+              <div
+                class="mt-5 inline-flex w-full max-w-md gap-1 rounded-[10px] p-1"
+                style="background: var(--color-surface-2); border: 1px solid var(--color-border)"
+                role="tablist"
+                aria-label="Automaton type"
+              >
+                <button data-type="DFA" role="tab" aria-selected="true" class="tab flex-1 justify-center" type="button">
+                  DFA
+                </button>
+                <button
+                  data-type="NFA"
+                  role="tab"
+                  aria-selected="false"
+                  class="tab flex-1 justify-center"
+                  type="button"
+                >
+                  NFA
+                </button>
+                <button
+                  data-type="EPSILON_NFA"
+                  role="tab"
+                  aria-selected="false"
+                  class="tab flex-1 justify-center"
+                  type="button"
+                >
+                  ε-NFA
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Definition form -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Definition</h2>
+              <span id="definition-status" class="chip">
+                <i data-lucide="circle-help" style="font-size: 13px"></i>
+                <span>Edit fields below</span>
+              </span>
+            </div>
+            <div class="card-body grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label class="label" for="input-name">Name</label>
+                <input id="input-name" class="input" placeholder="e.g. ends-in-1" autocomplete="off" />
+              </div>
+              <div>
+                <label class="label" for="input-start">Start state</label>
+                <input id="input-start" class="input input-mono" placeholder="q0" autocomplete="off" />
+              </div>
+              <div>
+                <label class="label" for="input-states">States (comma-separated)</label>
                 <input
-                  type="hidden"
-                  id="transition-table-generated"
-                  name="transition-table-generated"
-                  value="false"
+                  id="input-states"
+                  class="input input-mono"
+                  placeholder="q0, q1, q2"
+                  autocomplete="off"
+                  aria-describedby="hint-states"
                 />
-              </form>
-            </div>
-          </div>
-
-          <!-- Information section -->
-          <div
-            class="card mb-4"
-            data-aos="fade-up"
-            data-aos-duration="800"
-            data-aos-delay="200"
-          >
-            <div class="card-header">
-              <i class="fas fa-info-circle"></i> About DFA
-            </div>
-            <div class="card-body">
-              <p>
-                A <strong>Deterministic Finite Automaton (DFA)</strong> is a
-                finite state machine that accepts or rejects a given string of
-                symbols by running through a state sequence uniquely determined
-                by the string.
-              </p>
-              <div class="row">
-                <div class="col-md-6">
-                  <ul class="list-unstyled mb-0">
-                    <li>
-                      <i class="fas fa-check-circle text-success me-2"></i> Set
-                      of states (Q)
-                    </li>
-                    <li>
-                      <i class="fas fa-check-circle text-success me-2"></i>
-                      Alphabet (Σ)
-                    </li>
-                    <li>
-                      <i class="fas fa-check-circle text-success me-2"></i>
-                      Transition function (δ)
-                    </li>
-                  </ul>
-                </div>
-                <div class="col-md-6">
-                  <ul class="list-unstyled mb-0">
-                    <li>
-                      <i class="fas fa-check-circle text-success me-2"></i>
-                      Initial state (q₀)
-                    </li>
-                    <li>
-                      <i class="fas fa-check-circle text-success me-2"></i> Set
-                      of accept states (F)
-                    </li>
-                  </ul>
-                </div>
+                <p id="hint-states" class="hint">Each label must be unique and non-empty.</p>
+              </div>
+              <div>
+                <label class="label" for="input-alphabet">Alphabet (comma-separated)</label>
+                <input
+                  id="input-alphabet"
+                  class="input input-mono"
+                  placeholder="0, 1"
+                  autocomplete="off"
+                  aria-describedby="hint-alphabet"
+                />
+                <p id="hint-alphabet" class="hint">
+                  Single characters or short tokens.
+                  <span id="hint-epsilon" class="hidden">ε is added automatically for ε-NFAs.</span>
+                </p>
+              </div>
+              <div class="md:col-span-2">
+                <label class="label" for="input-accept">Accept states (comma-separated)</label>
+                <input id="input-accept" class="input input-mono" placeholder="q1" autocomplete="off" />
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Result section -->
-        <div class="col-lg-4">
-          <div
-            class="card sticky-top"
-            style="top: 20px"
-            data-aos="fade-left"
-            data-aos-duration="800"
-          >
+          <!-- Transition table -->
+          <div class="card">
             <div class="card-header">
-              <i class="fas fa-table me-2"></i> Simulation Results
+              <h2 class="card-title">Transition table</h2>
+              <span id="table-status" class="chip">
+                <span id="table-status-text">No transitions yet</span>
+              </span>
             </div>
             <div class="card-body">
-              <div id="result" class="result-output">
-                <p class="text-center text-muted">
-                  <i class="fas fa-robot fa-3x mb-3"></i><br />
-                  Enter DFA parameters and run the simulation to see results
+              <div id="transition-empty" class="text-center py-8 text-sm" style="color: var(--color-ink-subtle)">
+                <span
+                  class="mx-auto mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full"
+                  style="background: var(--color-surface-2)"
+                  ><i data-lucide="inbox" style="font-size: 18px"></i
+                ></span>
+                <p>Add states and an alphabet above to begin editing transitions.</p>
+              </div>
+              <div id="transition-wrap" class="hidden">
+                <div class="scrollarea overflow-x-auto">
+                  <table id="transition-table" class="min-w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th class="px-3 py-2 text-left font-medium" style="color: var(--color-ink-muted)">
+                          State \ Symbol
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+                <p class="hint mt-3" id="transition-hint">
+                  For NFAs, separate multiple targets with commas (e.g. <code>q0, q1</code>). Leave blank for no
+                  transition.
                 </p>
               </div>
             </div>
           </div>
 
-          <!-- My Saved DFAs Card (shown when logged in) -->
-          <div class="card mt-4 my-dfas-container d-none">
+          <!-- String tester -->
+          <div class="card">
             <div class="card-header">
-              <i class="fas fa-save me-2"></i> My Saved DFAs
+              <h2 class="card-title">Test an input string</h2>
+              <div class="flex items-center gap-2">
+                <button id="action-convert" class="btn btn-ghost text-xs hidden" type="button">
+                  <i data-lucide="git-merge" style="font-size: 14px"></i>
+                  Convert to DFA
+                </button>
+                <button id="action-minimize" class="btn btn-ghost text-xs hidden" type="button">
+                  <i data-lucide="minimize-2" style="font-size: 14px"></i>
+                  Minimize
+                </button>
+              </div>
             </div>
-            <div class="card-body">
-              <div id="saved-dfas-list" class="saved-dfas-list">
-                <p class="text-center text-muted loading-dfas">
-                  <i class="fas fa-spinner fa-spin mb-3"></i><br />
-                  Loading your saved DFAs...
-                </p>
+            <div class="card-body space-y-4">
+              <div class="flex flex-col gap-2 sm:flex-row">
+                <input
+                  id="input-test"
+                  class="input input-mono flex-1"
+                  placeholder="Enter a string over your alphabet…"
+                  autocomplete="off"
+                />
+                <button id="action-test" class="btn btn-primary" type="button">
+                  <i data-lucide="play" style="font-size: 15px"></i>
+                  Test
+                </button>
+              </div>
+              <div
+                id="test-result"
+                class="hidden rounded-[12px] border px-4 py-3"
+                style="border-color: var(--color-border)"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2">
+                    <span id="test-result-chip" class="chip"></span>
+                    <span id="test-result-input" class="text-sm font-mono" style="color: var(--color-ink-muted)"></span>
+                  </div>
+                  <span id="test-result-detail" class="text-xs" style="color: var(--color-ink-subtle)"></span>
+                </div>
+                <div id="test-trace" class="mt-3 hidden text-xs font-mono" style="color: var(--color-ink-muted)"></div>
+              </div>
+              <div id="general-error" class="hidden rounded-[10px] px-3 py-2 text-sm" role="alert"></div>
+            </div>
+          </div>
+
+          <!-- Save bar -->
+          <div class="card">
+            <div class="card-body flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm font-medium">Save this automaton to your library</p>
+                <p class="hint mt-0">Saved automata live in your browser. Sign-in keeps them scoped to your account.</p>
+              </div>
+              <div class="flex gap-2">
+                <button id="action-save" class="btn btn-primary text-sm" type="button">
+                  <i data-lucide="save" style="font-size: 14px"></i>
+                  Save
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        <aside class="space-y-4" aria-label="Saved automata">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title flex items-center gap-2">
+                <i data-lucide="library" style="font-size: 14px"></i>
+                Your library
+              </h2>
+              <span id="library-count" class="chip">0</span>
+            </div>
+            <div id="library-list" class="px-2 py-2"></div>
+            <div id="library-empty" class="px-5 py-8 text-center text-sm" style="color: var(--color-ink-subtle)">
+              <p>No saved automata yet.</p>
+              <p class="mt-1 text-xs">Build one on the left and hit Save.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body text-sm">
+              <h3 class="font-semibold tracking-tight">Quick reference</h3>
+              <dl class="mt-3 space-y-2 text-xs" style="color: var(--color-ink-muted)">
+                <div>
+                  <dt class="font-medium" style="color: var(--color-ink)">DFA</dt>
+                  <dd>Exactly one transition per (state, symbol). Deterministic.</dd>
+                </div>
+                <div>
+                  <dt class="font-medium" style="color: var(--color-ink)">NFA</dt>
+                  <dd>Zero or more transitions per (state, symbol).</dd>
+                </div>
+                <div>
+                  <dt class="font-medium" style="color: var(--color-ink)">ε-NFA</dt>
+                  <dd>NFA + transitions on ε (the empty string).</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </aside>
       </div>
-    </div>
+    </main>
 
-    <!-- Team Section -->
-    <section class="team-section" data-aos="fade-up" data-aos-duration="1000">
-      <div class="container">
-        <div class="team-header">
-          <h2 class="team-title">Meet the Team</h2>
-          <p class="team-subtitle">
-            The talented minds behind this DFA Simulator project
+    <!-- Auth-config error overlay (only shown when Clerk publishable key is missing) -->
+    <div
+      id="config-overlay"
+      class="fixed inset-0 z-40 hidden items-center justify-center p-4"
+      style="background: oklch(0 0 0 / 0.45)"
+    >
+      <div class="card w-full max-w-md">
+        <div class="card-body space-y-3">
+          <h3 class="text-lg font-semibold">Auth configuration needed</h3>
+          <p class="text-sm" style="color: var(--color-ink-muted)" id="config-overlay-message"></p>
+          <p class="hint">
+            Add it to <code class="font-mono">.env.local</code> as
+            <code class="font-mono">VITE_CLERK_PUBLISHABLE_KEY=…</code> and restart the dev server.
           </p>
         </div>
-
-        <div class="row">
-          <div class="col-md-4">
-            <div class="team-member">
-              <div class="member-avatar">
-                <i class="fas fa-user"></i>
-              </div>
-              <h3 class="member-name">Shayan Ali</h3>
-              <p class="member-role">Lead Developer</p>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="team-member">
-              <div class="member-avatar">
-                <i class="fas fa-user"></i>
-              </div>
-              <h3 class="member-name">Hamza Wahab</h3>
-              <p class="member-role">Algorithm Specialist</p>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="team-member">
-              <div class="member-avatar">
-                <i class="fas fa-user"></i>
-              </div>
-              <h3 class="member-name">Wania Amir</h3>
-              <p class="member-role">UI/UX Designer</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="text-center text-white">
-          <p>© 2025 DFA Simulator | All Rights Reserved</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="container">
-        <p class="mb-0">
-          <i class="fas fa-project-diagram me-1"></i> Crafted with
-          <i class="fas fa-brain text-info mx-1"></i> and
-          <i class="fas fa-sparkles text-warning mx-1"></i> by Automata
-          Enthusiasts
-        </p>
-      </div>
-    </footer>
-
-    <!-- Save DFA Modal -->
-    <div class="modal fade" id="saveDFAModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Save Your DFA</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form id="save-dfa-form">
-              <div class="mb-3">
-                <label for="dfa-name" class="form-label">DFA Name</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="dfa-name"
-                  placeholder="My Binary DFA"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label for="dfa-description" class="form-label"
-                  >Description (optional)</label
-                >
-                <textarea
-                  class="form-control"
-                  id="dfa-description"
-                  rows="3"
-                  placeholder="This DFA accepts strings..."
-                ></textarea>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cancel
-            </button>
-            <button type="button" class="btn btn-success" id="save-dfa-btn">
-              <i class="fas fa-save me-2"></i>Save
-            </button>
-          </div>
-        </div>
       </div>
     </div>
 
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- SweetAlert JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- AOS - Animate on Scroll -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
-    <!-- Firebase JS -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-    <!-- Firebase Config -->
-    <script src="./codebase/firebase-config.js"></script>
-    <!-- Auth JS -->
-    <script src="./codebase/auth.js"></script>
-    <!-- Custom JS -->
-    <script src="codebase/dfa-storage.js"></script>
-    <script src="codebase/script.js"></script>
-    <script>
-      // Initialize AOS
-      AOS.init({
-        once: true,
-        offset: 100,
-        duration: 800,
-      });
-    </script>
+    <script type="module" src="/src/main.entry.js"></script>
   </body>
 </html>
