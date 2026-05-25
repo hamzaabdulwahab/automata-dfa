@@ -86,7 +86,7 @@
               <span id="definition-status" class="eyebrow" aria-live="polite"></span>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px">
+            <div class="def-grid">
               <div class="field">
                 <label for="input-name" class="field__label">Name</label>
                 <input id="input-name" class="input" autocomplete="off" placeholder="e.g. ends in 1" />
@@ -118,7 +118,7 @@
                   >
                 </span>
               </div>
-              <div class="field" style="grid-column: 1 / -1">
+              <div class="field def-grid__full">
                 <label for="input-accept" class="field__label field__label--sym">
                   <span class="field__sym">F</span>
                   <span class="field__label-name">Accept states</span>
@@ -283,6 +283,30 @@
         }
         .auth-mark {
           font-size: 2.25rem !important;
+        }
+      }
+      .def-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px 24px;
+      }
+      .def-grid__full {
+        grid-column: 1 / -1;
+      }
+      @media (max-width: 560px) {
+        .def-grid {
+          grid-template-columns: 1fr;
+        }
+        .def-grid__full {
+          grid-column: auto;
+        }
+      }
+      @media (max-width: 380px) {
+        .display {
+          font-size: 1.625rem !important;
+        }
+        .wordmark {
+          font-size: 0.9375rem !important;
         }
       }
     </style>
