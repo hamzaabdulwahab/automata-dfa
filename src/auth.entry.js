@@ -1,4 +1,5 @@
 import './styles/main.css';
+import { renderIcons } from './ui/icons.js';
 import { signInWithGoogle, redirectIfSignedIn, AuthConfigError } from './auth/clerk.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -18,6 +19,7 @@ function setBusy(busy) {
 }
 
 async function init() {
+  renderIcons();
   try {
     await redirectIfSignedIn({ redirectTo: '/' });
   } catch (err) {

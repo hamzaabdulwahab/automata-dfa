@@ -9,6 +9,7 @@ export default defineConfig({
       input: {
         main: resolve(import.meta.dirname, 'index.html'),
         auth: resolve(import.meta.dirname, 'auth.html'),
+        ssoCallback: resolve(import.meta.dirname, 'sso-callback.html'),
       },
     },
   },

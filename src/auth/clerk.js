@@ -48,10 +48,17 @@ export async function signInWithGoogle({ redirectUrl } = {}) {
     return;
   }
   const clerk = await getClerk();
-  await clerk.authenticateWithRedirect({
+  const origin = window.location.origin;
+  const completeUrl = redirectUrl ?? new URL('/', origin).toString();
+  const callbackUrl = new URL('/sso-callback.html', origin).toString();
+
+  // Clerk JS v5: OAuth redirect lives on the SignIn resource, not on the Clerk instance.
+  // The same call handles first-time sign-up via Google because the resource transfers
+  // automatically when the email isn't recognised.
+  await clerk.client.signIn.authenticateWithRedirect({
     strategy: 'oauth_google',
-    redirectUrl: redirectUrl ?? new URL('/', window.location.origin).toString(),
-    redirectUrlComplete: redirectUrl ?? new URL('/', window.location.origin).toString(),
+    redirectUrl: callbackUrl,
+    redirectUrlComplete: completeUrl,
   });
 }
 
