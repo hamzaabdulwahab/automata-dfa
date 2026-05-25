@@ -4,24 +4,34 @@ function setKey(set) {
   return [...set].sort().join(',');
 }
 
-function setLabel(set) {
-  if (set.size === 0) return '∅';
-  return `{${[...set].sort().join('+')}}`;
+/**
+ * Generate a short, readable label for the n-th generated state.
+ * Index 0 → A, 1 → B, ..., 25 → Z, 26 → A1, 27 → B1, ...
+ * Stays compact for the usual case (<26 states) and predictable beyond it.
+ */
+function letterLabel(index) {
+  const letter = String.fromCharCode(65 + (index % 26));
+  const suffix = Math.floor(index / 26);
+  return suffix === 0 ? letter : `${letter}${suffix}`;
 }
 
 /**
  * Subset construction: convert any NFA (with or without ε-transitions) to an equivalent DFA.
  * The resulting DFA is total (every state has every symbol defined), with a dedicated dead
  * state ∅ for unreachable subsets, and it preserves the original NFA's language.
+ *
+ * Generated states are named A, B, C, ... — short and readable. The original subset
+ * for each name is available on dfa.toJSON().origin[label] (e.g. { A: ['q0'], B: ['q0','q1'] }).
  */
 export function nfaToDfa(nfa) {
   const alphabet = [...nfa.alphabet];
   const startClosure = nfa.epsilonClosure(nfa.startState);
   const startKey = setKey(startClosure);
 
-  // Map subset-key -> { label, sourceStates: Set<originalState> }
+  // subset-key -> { label, source: Set<originalState> }
   const subsets = new Map();
-  subsets.set(startKey, { label: setLabel(startClosure), source: startClosure });
+  let labelCounter = 0;
+  subsets.set(startKey, { label: letterLabel(labelCounter++), source: startClosure });
 
   const transitions = {};
   const queue = [startClosure];
@@ -33,7 +43,7 @@ export function nfaToDfa(nfa) {
     const fromLabel = subsets.get(fromKey).label;
     transitions[fromLabel] = transitions[fromLabel] ?? {};
 
-    // Mark as accepting if any member is accepting
+    // Accepting if any member is accepting in the source NFA
     for (const s of subset) {
       if (nfa.acceptStates.has(s)) {
         if (!acceptStates.includes(fromLabel)) acceptStates.push(fromLabel);
@@ -46,7 +56,7 @@ export function nfaToDfa(nfa) {
       const closed = nfa.epsilonClosureOfSet(moved);
       const toKey = setKey(closed);
       if (!subsets.has(toKey)) {
-        subsets.set(toKey, { label: setLabel(closed), source: closed });
+        subsets.set(toKey, { label: letterLabel(labelCounter++), source: closed });
         queue.push(closed);
       }
       transitions[fromLabel][symbol] = subsets.get(toKey).label;
@@ -54,20 +64,29 @@ export function nfaToDfa(nfa) {
   }
 
   const states = [...subsets.values()].map((v) => v.label);
+  const origin = {};
+  for (const { label, source } of subsets.values()) {
+    origin[label] = source.size === 0 ? ['∅'] : [...source].sort();
+  }
 
-  return new DFA({
+  const dfa = new DFA({
     states,
     alphabet,
     transitions,
     startState: subsets.get(startKey).label,
     acceptStates,
   });
+  dfa.origin = origin;
+  return dfa;
 }
 
 /**
  * Hopcroft-style partition refinement minimization.
  * Removes unreachable states first, then merges equivalent states.
  * Returns a new minimized DFA that accepts the same language.
+ *
+ * The resulting states are renamed A, B, C, ... for legibility. The original
+ * member states for each name are available on dfa.origin[label].
  */
 export function minimizeDfa(dfa) {
   // 1. Remove unreachable states
@@ -120,12 +139,20 @@ export function minimizeDfa(dfa) {
     partitions = next;
   }
 
-  // 3. Build the minimized DFA — one new state per partition.
-  // Label each partition: use the original start-state's group label as start, otherwise use sorted members.
+  // 3. Build the minimized DFA — one new state per partition, labelled A, B, C...
+  //    Sort partitions so the start state's partition comes first (so it becomes A).
+  const startPartitionIdx = partitions.findIndex((p) => p.has(dfa.startState));
+  if (startPartitionIdx > 0) {
+    const [start] = partitions.splice(startPartitionIdx, 1);
+    partitions.unshift(start);
+  }
+
   const labelOf = new Map(); // partition index -> label
+  const origin = {};
   partitions.forEach((group, idx) => {
-    const sorted = [...group].sort();
-    labelOf.set(idx, sorted.length === 1 ? sorted[0] : `[${sorted.join('+')}]`);
+    const label = letterLabel(idx);
+    labelOf.set(idx, label);
+    origin[label] = [...group].sort();
   });
 
   const stateToPartition = new Map();
@@ -133,7 +160,6 @@ export function minimizeDfa(dfa) {
     for (const s of group) stateToPartition.set(s, idx);
   });
 
-  const newStartIdx = stateToPartition.get(dfa.startState);
   const newAccept = new Set();
   partitions.forEach((group, idx) => {
     for (const s of group) {
@@ -158,11 +184,13 @@ export function minimizeDfa(dfa) {
     }
   });
 
-  return new DFA({
+  const result = new DFA({
     states: [...labelOf.values()],
     alphabet: [...dfa.alphabet],
     transitions: newTransitions,
-    startState: labelOf.get(newStartIdx),
+    startState: labelOf.get(0),
     acceptStates: [...newAccept],
   });
+  result.origin = origin;
+  return result;
 }

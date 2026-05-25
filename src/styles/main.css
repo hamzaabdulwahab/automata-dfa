@@ -205,23 +205,29 @@
     align-items: baseline;
     justify-content: space-between;
   }
-  .field__label--sym {
-    font-family: var(--font-mono);
+  /* Plain-English label leads; the math symbol sits to the right as an annotation */
+  .field__label-name {
+    font-family: var(--font-sans);
     color: var(--color-ink);
-    text-transform: none;
-    letter-spacing: 0;
     font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    text-transform: none;
   }
   .field__sym {
     font-family: var(--font-mono);
-    color: var(--color-ink);
+    color: var(--color-ink-faint);
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-decoration: underline dotted;
+    text-decoration-color: var(--color-rule-strong);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    cursor: help;
   }
-  .field__label-name {
-    font-family: var(--font-sans);
-    color: var(--color-ink-muted);
-    font-size: 0.6875rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .field__sym:hover {
+    color: var(--color-accent);
+    text-decoration-color: var(--color-accent);
   }
   .field__hint {
     font-size: 0.75rem;
@@ -671,6 +677,79 @@
     height: 14px;
     stroke-width: 1.5;
     flex-shrink: 0;
+  }
+
+  /* Onboarding card — shown only when the workspace is empty */
+  .onboarding {
+    background: var(--color-paper-2);
+    border: 1px solid var(--color-rule);
+    border-radius: 4px;
+    padding: 24px 28px;
+  }
+  .onboarding__head {
+    margin-bottom: 18px;
+  }
+  .onboarding__steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .onboarding__steps li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .onboarding__num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--color-rule-strong);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-ink);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .onboarding__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+  .onboarding__copy {
+    margin: 4px 0 0;
+    font-size: 0.8125rem;
+    color: var(--color-ink-muted);
+    line-height: 1.55;
+  }
+  .onboarding__copy em {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+  .onboarding__code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    background: var(--color-paper);
+    border: 1px solid var(--color-rule);
+    border-radius: 2px;
+    padding: 1px 5px;
+    color: var(--color-ink);
+  }
+  .onboarding__cta {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--color-rule);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
   }
 
   /* Theme toggle — shows the icon of the theme you'll switch TO */

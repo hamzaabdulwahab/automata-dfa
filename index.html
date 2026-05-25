@@ -82,12 +82,12 @@
             <h1 class="display">
               <span id="automaton-name-display">Untitled automaton</span>
             </h1>
-            <p class="auth-epigraph" style="margin-top: 14px">
-              M&nbsp;=&nbsp;(<span class="accent">Q</span>,&nbsp;<span class="accent">Σ</span>,&nbsp;<span
-                class="accent"
-                >δ</span
-              >,&nbsp;<span class="accent">q<sub>0</sub></span
-              >,&nbsp;<span class="accent">F</span>)
+            <p
+              class="auth-epigraph"
+              style="margin-top: 14px"
+              title="A finite automaton: states Q, alphabet Σ, transition function δ, start state q₀, accept states F."
+            >
+              M&nbsp;=&nbsp;(<span class="accent" title="set of states">Q</span>,&nbsp;<span class="accent" title="input alphabet">Σ</span>,&nbsp;<span class="accent" title="transition function">δ</span>,&nbsp;<span class="accent" title="start state">q<sub>0</sub></span>,&nbsp;<span class="accent" title="set of accept states">F</span>)
             </p>
           </header>
 
@@ -122,6 +122,51 @@
             </div>
           </div>
 
+          <!-- Empty-state guide (shown when there are no states or alphabet yet) -->
+          <section id="empty-onboarding" class="section" hidden>
+            <div class="onboarding">
+              <div class="onboarding__head">
+                <p class="eyebrow">First time?</p>
+                <h2 class="h2" style="margin-top: 4px">Build your first DFA in three steps.</h2>
+              </div>
+              <ol class="onboarding__steps">
+                <li>
+                  <span class="onboarding__num">1</span>
+                  <div>
+                    <p class="onboarding__title">List the states.</p>
+                    <p class="onboarding__copy">
+                      Type them comma-separated in <em>States</em>, e.g. <code class="onboarding__code">q0, q1</code>. Each state is a snapshot of "where the machine is".
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span class="onboarding__num">2</span>
+                  <div>
+                    <p class="onboarding__title">List the alphabet.</p>
+                    <p class="onboarding__copy">
+                      Type the input symbols in <em>Alphabet</em>, e.g. <code class="onboarding__code">0, 1</code>. These are the only symbols your test strings may contain.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span class="onboarding__num">3</span>
+                  <div>
+                    <p class="onboarding__title">Set start &amp; accept states, then fill the table.</p>
+                    <p class="onboarding__copy">
+                      Pick which state to begin in and which states accept the input. Then for every (state, symbol) cell, type the state to go to.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+              <div class="onboarding__cta">
+                <button id="onboarding-example" class="btn btn--primary btn--sm" type="button">
+                  Load a worked example
+                </button>
+                <span class="field__hint" style="margin: 0">or just start typing the fields below.</span>
+              </div>
+            </div>
+          </section>
+
           <!-- §1 Definition -->
           <section class="section">
             <div class="section__head">
@@ -138,38 +183,40 @@
                 <input id="input-name" class="input" autocomplete="off" placeholder="e.g. ends in 1" />
               </div>
               <div class="field">
-                <label for="input-start" class="field__label field__label--sym">
-                  <span class="field__sym">q<sub>0</sub></span>
+                <label for="input-start" class="field__label">
                   <span class="field__label-name">Start state</span>
+                  <span class="field__sym" title="The state your automaton begins in. Conventionally written q₀.">q<sub>0</sub></span>
                 </label>
                 <input id="input-start" class="input input--mono" autocomplete="off" placeholder="q0" />
+                <span class="field__hint">The label of the single state where evaluation begins.</span>
               </div>
               <div class="field">
-                <label for="input-states" class="field__label field__label--sym">
-                  <span class="field__sym">Q</span>
+                <label for="input-states" class="field__label">
                   <span class="field__label-name">States</span>
+                  <span class="field__sym" title="The full set of states. Written Q in formal definitions.">Q</span>
                 </label>
                 <input id="input-states" class="input input--mono" autocomplete="off" placeholder="q0, q1, q2" />
-                <span class="field__hint">Comma-separated. Labels must be unique.</span>
+                <span class="field__hint">Comma-separated names. Each one must be unique.</span>
               </div>
               <div class="field">
-                <label for="input-alphabet" class="field__label field__label--sym">
-                  <span class="field__sym">Σ</span>
+                <label for="input-alphabet" class="field__label">
                   <span class="field__label-name">Alphabet</span>
+                  <span class="field__sym" title="The set of allowed input symbols. Written Σ.">Σ</span>
                 </label>
                 <input id="input-alphabet" class="input input--mono" autocomplete="off" placeholder="0, 1" />
                 <span class="field__hint">
-                  Comma-separated single characters or short tokens.<span id="hint-epsilon" hidden>
-                    ε is implicit for ε-NFA transitions.</span
+                  The symbols your inputs may contain (comma-separated).<span id="hint-epsilon" hidden>
+                    The empty symbol ε is added automatically for ε-NFAs.</span
                   >
                 </span>
               </div>
               <div class="field def-grid__full">
-                <label for="input-accept" class="field__label field__label--sym">
-                  <span class="field__sym">F</span>
+                <label for="input-accept" class="field__label">
                   <span class="field__label-name">Accept states</span>
+                  <span class="field__sym" title="States in which the input is accepted. Written F ⊆ Q.">F</span>
                 </label>
                 <input id="input-accept" class="input input--mono" autocomplete="off" placeholder="q1" />
+                <span class="field__hint">When the input runs out and the machine is in one of these states, the string is accepted.</span>
               </div>
             </div>
           </section>
@@ -180,14 +227,14 @@
               <div class="section__title">
                 <span class="section__no">§2</span>
                 <h2 class="h2">
-                  Transition function&nbsp;<span class="auth-epigraph" style="font-size: 0.875rem">δ</span>
+                  Transition function&nbsp;<span class="auth-epigraph" style="font-size: 0.875rem" title="δ(state, symbol) → next state. For NFAs, → set of next states.">δ</span>
                 </h2>
               </div>
               <span id="table-status" class="eyebrow"></span>
             </div>
 
             <div id="transition-empty" style="padding: 32px 0; color: var(--color-ink-faint); font-style: italic">
-              Add states (Q) and a non-empty alphabet (Σ) above to populate the transition matrix.
+              Add at least one state and one input symbol above. This table will populate with a cell for every (state, symbol) pair, asking where to go next.
             </div>
 
             <div id="transition-wrap" hidden>

@@ -71,6 +71,8 @@ export function createWorkspace({ storage, user, onSignOut }) {
     libraryCount: $('#library-count'),
     signOut: $('#sign-out'),
     userEmail: $('#user-email'),
+    onboarding: $('#empty-onboarding'),
+    onboardingExample: $('#onboarding-example'),
   };
 
   function setType(type, { resetTransitions = true } = {}) {
@@ -138,7 +140,14 @@ export function createWorkspace({ storage, user, onSignOut }) {
     state.transitions = transitions;
   }
 
+  function renderOnboarding() {
+    if (!els.onboarding) return;
+    const isEmpty = state.states.length === 0 && state.alphabet.length === 0 && !state.name;
+    els.onboarding.hidden = !isEmpty;
+  }
+
   function renderTable() {
+    renderOnboarding();
     const symbols = symbolsForCurrentType();
     if (state.states.length === 0 || state.alphabet.length === 0) {
       els.transitionEmpty.hidden = false;
@@ -195,7 +204,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
         const input = document.createElement('input');
         input.className = 'matrix__cell-input';
         input.dataset.symbol = symbol;
-        input.placeholder = state.type === 'DFA' ? '∅' : symbol === EPSILON ? 'q1, q2' : '∅';
+        input.placeholder = '—';
         const existing = state.transitions[fromState]?.[symbol];
         if (Array.isArray(existing)) input.value = existing.join(', ');
         else if (existing) input.value = existing;
@@ -451,6 +460,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
   els.actionSave.addEventListener('click', saveCurrent);
   els.actionNew.addEventListener('click', newAutomaton);
   els.actionExample.addEventListener('click', loadExample);
+  els.onboardingExample?.addEventListener('click', loadExample);
   els.signOut.addEventListener('click', () => onSignOut?.());
 
   if (user?.primaryEmailAddress?.emailAddress) {
