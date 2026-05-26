@@ -17,8 +17,8 @@
     <style>
       /* Hide the workspace until Clerk confirms a session, otherwise the
          protected page flashes for the unauth'd user before the redirect. */
-      html[data-auth='pending'] body > header,
-      html[data-auth='pending'] body > main {
+      html[data-auth="pending"] body > header,
+      html[data-auth="pending"] body > main {
         visibility: hidden;
       }
       #auth-gate {
@@ -30,11 +30,11 @@
         background: var(--color-paper);
         z-index: 60;
       }
-      html[data-auth='pending'] #auth-gate {
+      html[data-auth="pending"] #auth-gate {
         display: flex;
       }
       #auth-gate__label {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: "JetBrains Mono", monospace;
         font-size: 0.75rem;
         letter-spacing: 0.04em;
         color: var(--color-ink-faint);
@@ -44,15 +44,15 @@
       // Set theme + auth-gate state before the first paint to avoid flashes.
       (function () {
         try {
-          var t = localStorage.getItem('automata-dfa:theme');
-          if (t !== 'light' && t !== 'dark') {
-            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          var t = localStorage.getItem("automata-dfa:theme");
+          if (t !== "light" && t !== "dark") {
+            t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
           }
-          document.documentElement.setAttribute('data-theme', t);
+          document.documentElement.setAttribute("data-theme", t);
         } catch (e) {
           /* localStorage / matchMedia may be unavailable */
         }
-        document.documentElement.setAttribute('data-auth', 'pending');
+        document.documentElement.setAttribute("data-auth", "pending");
       })();
     </script>
   </head>
@@ -87,7 +87,15 @@
               style="margin-top: 14px"
               title="A finite automaton: states Q, alphabet Σ, transition function δ, start state q₀, accept states F."
             >
-              M&nbsp;=&nbsp;(<span class="accent" title="set of states">Q</span>,&nbsp;<span class="accent" title="input alphabet">Σ</span>,&nbsp;<span class="accent" title="transition function">δ</span>,&nbsp;<span class="accent" title="start state">q<sub>0</sub></span>,&nbsp;<span class="accent" title="set of accept states">F</span>)
+              M&nbsp;=&nbsp;(<span class="accent" title="set of states">Q</span>,&nbsp;<span
+                class="accent"
+                title="input alphabet"
+                >Σ</span
+              >,&nbsp;<span class="accent" title="transition function">δ</span>,&nbsp;<span
+                class="accent"
+                title="start state"
+                >q<sub>0</sub></span
+              >,&nbsp;<span class="accent" title="set of accept states">F</span>)
             </p>
           </header>
 
@@ -122,6 +130,19 @@
             </div>
           </div>
 
+          <!-- Transformation provenance -->
+          <section id="provenance-panel" class="provenance" hidden aria-live="polite">
+            <div class="provenance__head">
+              <div>
+                <p class="eyebrow">Transformation map</p>
+                <h2 id="provenance-title" class="h2" style="margin-top: 4px"></h2>
+              </div>
+              <span id="provenance-meta" class="eyebrow"></span>
+            </div>
+            <p id="provenance-detail" class="provenance__detail"></p>
+            <ol id="provenance-list" class="provenance__list"></ol>
+          </section>
+
           <!-- Empty-state guide (shown when there are no states or alphabet yet) -->
           <section id="empty-onboarding" class="section" hidden>
             <div class="onboarding">
@@ -135,7 +156,8 @@
                   <div>
                     <p class="onboarding__title">List the states.</p>
                     <p class="onboarding__copy">
-                      Type them comma-separated in <em>States</em>, e.g. <code class="onboarding__code">q0, q1</code>. Each state is a snapshot of "where the machine is".
+                      Type them comma-separated in <em>States</em>, e.g. <code class="onboarding__code">q0, q1</code>.
+                      Each state is a snapshot of "where the machine is".
                     </p>
                   </div>
                 </li>
@@ -144,7 +166,8 @@
                   <div>
                     <p class="onboarding__title">List the alphabet.</p>
                     <p class="onboarding__copy">
-                      Type the input symbols in <em>Alphabet</em>, e.g. <code class="onboarding__code">0, 1</code>. These are the only symbols your test strings may contain.
+                      Type the input symbols in <em>Alphabet</em>, e.g. <code class="onboarding__code">0, 1</code>.
+                      These are the only symbols your test strings may contain.
                     </p>
                   </div>
                 </li>
@@ -153,7 +176,8 @@
                   <div>
                     <p class="onboarding__title">Set start &amp; accept states, then fill the table.</p>
                     <p class="onboarding__copy">
-                      Pick which state to begin in and which states accept the input. Then for every (state, symbol) cell, type the state to go to.
+                      Pick which state to begin in and which states accept the input. Then for every (state, symbol)
+                      cell, type the state to go to.
                     </p>
                   </div>
                 </li>
@@ -185,7 +209,9 @@
               <div class="field">
                 <label for="input-start" class="field__label">
                   <span class="field__label-name">Start state</span>
-                  <span class="field__sym" title="The state your automaton begins in. Conventionally written q₀.">q<sub>0</sub></span>
+                  <span class="field__sym" title="The state your automaton begins in. Conventionally written q₀."
+                    >q<sub>0</sub></span
+                  >
                 </label>
                 <input id="input-start" class="input input--mono" autocomplete="off" placeholder="q0" />
                 <span class="field__hint">The label of the single state where evaluation begins.</span>
@@ -216,7 +242,9 @@
                   <span class="field__sym" title="States in which the input is accepted. Written F ⊆ Q.">F</span>
                 </label>
                 <input id="input-accept" class="input input--mono" autocomplete="off" placeholder="q1" />
-                <span class="field__hint">When the input runs out and the machine is in one of these states, the string is accepted.</span>
+                <span class="field__hint"
+                  >When the input runs out and the machine is in one of these states, the string is accepted.</span
+                >
               </div>
             </div>
           </section>
@@ -227,14 +255,20 @@
               <div class="section__title">
                 <span class="section__no">§2</span>
                 <h2 class="h2">
-                  Transition function&nbsp;<span class="auth-epigraph" style="font-size: 0.875rem" title="δ(state, symbol) → next state. For NFAs, → set of next states.">δ</span>
+                  Transition function&nbsp;<span
+                    class="auth-epigraph"
+                    style="font-size: 0.875rem"
+                    title="δ(state, symbol) → next state. For NFAs, → set of next states."
+                    >δ</span
+                  >
                 </h2>
               </div>
               <span id="table-status" class="eyebrow"></span>
             </div>
 
             <div id="transition-empty" style="padding: 32px 0; color: var(--color-ink-faint); font-style: italic">
-              Add at least one state and one input symbol above. This table will populate with a cell for every (state, symbol) pair, asking where to go next.
+              Add at least one state and one input symbol above. This table will populate with a cell for every (state,
+              symbol) pair, asking where to go next.
             </div>
 
             <div id="transition-wrap" hidden>
@@ -251,6 +285,21 @@
               <p id="transition-hint" class="field__hint" style="margin-top: 10px">
                 Enter the target state for each (state, symbol). For NFA / ε-NFA, separate multiple targets with commas.
                 Leave blank for no transition.
+              </p>
+            </div>
+
+            <div class="diagram-panel" aria-label="Automaton structure diagram">
+              <div class="diagram-panel__head">
+                <div>
+                  <p class="eyebrow">Structure diagram</p>
+                  <h3 class="h2" style="margin-top: 4px">States and transitions as a graph</h3>
+                </div>
+                <span id="diagram-status" class="eyebrow"></span>
+              </div>
+              <div id="automaton-diagram" class="diagram"></div>
+              <p class="field__hint" style="margin-top: 10px">
+                Circles are states. A double ring marks F, and the incoming arrow marks q₀. The table remains the source
+                of truth.
               </p>
             </div>
           </section>
@@ -275,7 +324,7 @@
               <button id="action-test" class="btn btn--primary" type="button">Decide</button>
             </div>
 
-            <div id="test-result" class="verdict" hidden>
+            <div id="test-result" class="verdict" aria-live="polite" hidden>
               <span id="test-result-chip" class="pill"></span>
               <span
                 id="test-result-input"
@@ -294,6 +343,28 @@
               <div id="test-trace" class="verdict__trace" style="width: 100%" hidden></div>
             </div>
 
+            <div class="batch">
+              <div class="field">
+                <label for="input-batch" class="field__label">
+                  <span class="field__label-name">Batch strings</span>
+                  <span class="field__sym" title="Several strings in Σ*, one per line.">Σ*</span>
+                </label>
+                <textarea
+                  id="input-batch"
+                  class="input input--mono batch__input"
+                  rows="4"
+                  autocomplete="off"
+                  placeholder="ε&#10;0&#10;1&#10;101"
+                ></textarea>
+                <span class="field__hint">One string per line. Use ε for the empty string.</span>
+              </div>
+              <div class="batch__bar">
+                <button id="action-batch" class="btn btn--sm" type="button">Run batch</button>
+                <span id="batch-status" class="eyebrow" aria-live="polite"></span>
+              </div>
+              <div id="batch-results" class="batch__results" hidden></div>
+            </div>
+
             <p id="general-error" class="note" style="margin-top: 16px; display: none" role="alert"></p>
           </section>
         </article>
@@ -301,28 +372,31 @@
         <!-- Library sidebar -->
         <aside aria-label="Saved automata" id="sidebar">
           <div style="position: sticky; top: 24px">
-            <div
-              style="
-                display: flex;
-                align-items: baseline;
-                justify-content: space-between;
-                padding-bottom: 12px;
-                border-bottom: 1px solid var(--color-rule);
-              "
-            >
-              <h2 class="h2" style="font-size: 0.9375rem">Library</h2>
-              <span class="eyebrow num"><span id="library-count">0</span> saved</span>
-            </div>
+            <section class="side-section" aria-label="Automaton inspector">
+              <div class="side-section__head">
+                <h2 class="h2" style="font-size: 0.9375rem">Inspector</h2>
+                <span id="inspector-summary" class="inspector__summary">Reading</span>
+              </div>
+              <div id="inspector-stats" class="inspector__stats"></div>
+              <ul id="inspector-list" class="inspector__list"></ul>
+            </section>
 
-            <div
-              id="library-empty"
-              style="padding: 18px 0; color: var(--color-ink-faint); font-size: 0.8125rem; line-height: 1.5"
-            >
-              Save the current automaton to keep it scoped to your account. Saved machines reopen exactly as you left
-              them.
-            </div>
+            <section class="side-section" aria-label="Saved automata">
+              <div class="side-section__head">
+                <h2 class="h2" style="font-size: 0.9375rem">Library</h2>
+                <span class="eyebrow num"><span id="library-count">0</span> saved</span>
+              </div>
 
-            <div id="library-list" class="library"></div>
+              <div
+                id="library-empty"
+                style="padding: 18px 0; color: var(--color-ink-faint); font-size: 0.8125rem; line-height: 1.5"
+              >
+                Save the current automaton to keep it scoped to your account. Saved machines reopen exactly as you left
+                them.
+              </div>
+
+              <div id="library-list" class="library"></div>
+            </section>
           </div>
         </aside>
       </div>

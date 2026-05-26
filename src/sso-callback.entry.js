@@ -18,12 +18,9 @@ async function run() {
     // without moving the page, fall through to /.
     window.location.replace('/');
   } catch (err) {
-    console.error(err);
     if (status) {
       status.textContent =
-        err instanceof AuthConfigError
-          ? err.message
-          : `error: ${err?.message ?? String(err)}`;
+        err instanceof AuthConfigError ? err.message : `error: ${err?.message ?? String(err)}`;
       status.style.color = 'var(--color-accent)';
     }
   }

@@ -7,7 +7,9 @@ import {
   ValidationError,
   EvaluationError,
 } from '../engine/index.js';
+import { renderAutomatonDiagram } from './diagram.js';
 import { renderIcons } from './icons.js';
+import { analyzeAutomaton, formatSet, plural } from './inspector.js';
 import { parseList, parseTargets, EXAMPLES } from './parse.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -19,12 +21,17 @@ const TYPE_NAMES = {
   NFA: 'Non-deterministic finite automaton',
   EPSILON_NFA: 'Non-deterministic finite automaton with ε-transitions',
 };
+const MAX_BATCH_CASES = 40;
 
 const escapeHtml = (s) =>
   String(s).replace(
     /[&<>"']/g,
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
   );
+
+const inputLabel = (input) => (input === '' ? 'ε' : input);
+const formatSetHtml = (values) => escapeHtml(formatSet(values));
+const batchText = (inputs = []) => inputs.map(inputLabel).join('\n');
 
 export function createWorkspace({ storage, user, onSignOut }) {
   const state = {
@@ -36,6 +43,8 @@ export function createWorkspace({ storage, user, onSignOut }) {
     acceptStates: [],
     transitions: {},
     activeId: null,
+    origin: null,
+    provenance: null,
   };
 
   const els = {
@@ -52,6 +61,8 @@ export function createWorkspace({ storage, user, onSignOut }) {
     transitionWrap: $('#transition-wrap'),
     transitionTable: $('#transition-table'),
     tableStatus: $('#table-status'),
+    diagram: $('#automaton-diagram'),
+    diagramStatus: $('#diagram-status'),
     definitionStatus: $('#definition-status'),
     test: $('#input-test'),
     actionTest: $('#action-test'),
@@ -60,12 +71,24 @@ export function createWorkspace({ storage, user, onSignOut }) {
     actionSave: $('#action-save'),
     actionNew: $('#action-new'),
     actionExample: $('#action-example'),
+    provenancePanel: $('#provenance-panel'),
+    provenanceTitle: $('#provenance-title'),
+    provenanceMeta: $('#provenance-meta'),
+    provenanceDetail: $('#provenance-detail'),
+    provenanceList: $('#provenance-list'),
     testResult: $('#test-result'),
     testResultChip: $('#test-result-chip'),
     testResultInput: $('#test-result-input'),
     testResultDetail: $('#test-result-detail'),
     testTrace: $('#test-trace'),
+    batch: $('#input-batch'),
+    actionBatch: $('#action-batch'),
+    batchResults: $('#batch-results'),
+    batchStatus: $('#batch-status'),
     generalError: $('#general-error'),
+    inspectorSummary: $('#inspector-summary'),
+    inspectorStats: $('#inspector-stats'),
+    inspectorList: $('#inspector-list'),
     libraryList: $('#library-list'),
     libraryEmpty: $('#library-empty'),
     libraryCount: $('#library-count'),
@@ -94,6 +117,100 @@ export function createWorkspace({ storage, user, onSignOut }) {
     const base = [...state.alphabet];
     if (state.type === 'EPSILON_NFA') base.push(EPSILON);
     return base;
+  }
+
+  function pruneTransitionsForCurrentShape() {
+    const states = new Set(state.states);
+    const symbols = new Set(symbolsForCurrentType());
+    const next = {};
+    for (const fromState of state.states) {
+      const row = state.transitions[fromState];
+      if (!row) continue;
+      const kept = {};
+      for (const symbol of Object.keys(row)) {
+        if (states.has(fromState) && symbols.has(symbol)) kept[symbol] = row[symbol];
+      }
+      if (Object.keys(kept).length > 0) next[fromState] = kept;
+    }
+    state.transitions = next;
+  }
+
+  function clearProvenance() {
+    state.origin = null;
+    state.provenance = null;
+    renderProvenance();
+  }
+
+  function renderProvenance() {
+    if (!els.provenancePanel) return;
+    if (!state.origin || !state.provenance) {
+      els.provenancePanel.hidden = true;
+      els.provenanceList.innerHTML = '';
+      return;
+    }
+
+    const entries = Object.entries(state.origin);
+    els.provenancePanel.hidden = false;
+    els.provenanceTitle.textContent = state.provenance.title;
+    els.provenanceMeta.textContent = plural(entries.length, 'state');
+    els.provenanceDetail.textContent = state.provenance.detail;
+    els.provenanceList.innerHTML = entries
+      .map(
+        ([label, members]) => `
+          <li>
+            <code>${escapeHtml(label)}</code>
+            <span>${formatSetHtml(members)}</span>
+          </li>
+        `
+      )
+      .join('');
+  }
+
+  function renderDiagram() {
+    if (!els.diagram) return;
+    const result = renderAutomatonDiagram(els.diagram, {
+      states: state.states,
+      alphabet: state.alphabet,
+      startState: state.startState,
+      acceptStates: state.acceptStates,
+      transitions: state.transitions,
+    });
+    els.diagramStatus.textContent =
+      result.stateCount === 0
+        ? 'No graph yet'
+        : `${plural(result.stateCount, 'state')}, ${plural(result.edgeCount, 'edge')}`;
+  }
+
+  function renderInspector() {
+    if (!els.inspectorSummary) return;
+    const report = analyzeAutomaton({ ...state, symbols: symbolsForCurrentType() });
+    const summaryTone = report.problemCount > 0 ? 'problem' : report.warnCount > 0 ? 'warn' : 'ok';
+    els.inspectorSummary.className = `inspector__summary inspector__summary--${summaryTone}`;
+    els.inspectorSummary.textContent =
+      summaryTone === 'problem'
+        ? plural(report.problemCount, 'issue')
+        : summaryTone === 'warn'
+          ? plural(report.warnCount, 'warning')
+          : 'Ready';
+
+    const filledLabel = report.possibleCells
+      ? `${report.filledCells}/${report.possibleCells}`
+      : `${report.filledCells}`;
+    els.inspectorStats.innerHTML = `
+      <span><strong>${report.stateCount}</strong> Q</span>
+      <span><strong>${report.symbolCount}</strong> Σ</span>
+      <span><strong>${filledLabel}</strong> δ</span>
+    `;
+    els.inspectorList.innerHTML = report.entries
+      .map(
+        (entry) => `
+          <li class="inspector__item inspector__item--${entry.severity}">
+            <span class="inspector__mark">${entry.severity === 'ok' ? '✓' : entry.severity === 'note' ? '·' : '!'}</span>
+            <span>${escapeHtml(entry.text)}</span>
+          </li>
+        `
+      )
+      .join('');
   }
 
   function renderEyebrow() {
@@ -142,7 +259,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
 
   function renderOnboarding() {
     if (!els.onboarding) return;
-    const isEmpty = state.states.length === 0 && state.alphabet.length === 0 && !state.name;
+    const isEmpty = state.states.length === 0 && state.alphabet.length === 0;
     els.onboarding.hidden = !isEmpty;
   }
 
@@ -154,6 +271,8 @@ export function createWorkspace({ storage, user, onSignOut }) {
       els.transitionWrap.hidden = true;
       els.tableStatus.textContent = state.states.length === 0 ? 'No states yet' : 'No alphabet yet';
       renderEyebrow();
+      renderInspector();
+      renderDiagram();
       return;
     }
     els.transitionEmpty.hidden = true;
@@ -205,6 +324,11 @@ export function createWorkspace({ storage, user, onSignOut }) {
         input.className = 'matrix__cell-input';
         input.dataset.symbol = symbol;
         input.placeholder = '—';
+        input.setAttribute('aria-label', `δ(${fromState}, ${symbol})`);
+        input.title =
+          state.type === 'DFA'
+            ? `Next state from ${fromState} on ${symbol}`
+            : `Target states from ${fromState} on ${symbol}, comma-separated`;
         const existing = state.transitions[fromState]?.[symbol];
         if (Array.isArray(existing)) input.value = existing.join(', ');
         else if (existing) input.value = existing;
@@ -216,6 +340,8 @@ export function createWorkspace({ storage, user, onSignOut }) {
 
     els.tableStatus.textContent = `${state.states.length}×${symbols.length} cells`;
     renderEyebrow();
+    renderInspector();
+    renderDiagram();
   }
 
   function buildAutomaton() {
@@ -232,13 +358,85 @@ export function createWorkspace({ storage, user, onSignOut }) {
     return new NFA(def);
   }
 
+  function friendlyError(message) {
+    const text = String(message);
+    if (text.includes('alphabet must not') && text.includes('ε')) {
+      return 'Σ: do not include ε in the alphabet. Switch to ε-NFA when you need ε-transitions.';
+    }
+    if (text.startsWith('startState')) {
+      return 'q₀: choose exactly one start state that already appears in Q.';
+    }
+    if (text.startsWith('accept state')) {
+      return 'F: every accept state must already appear in Q.';
+    }
+    if (text.startsWith('transition target')) {
+      return 'δ: every transition target must be a declared state in Q.';
+    }
+    if (text.includes('is not in the alphabet')) {
+      return `input: ${text}. Check Σ or edit the test string.`;
+    }
+    if (text.startsWith('transitions must')) {
+      return 'δ: add states and symbols first, then fill the transition table.';
+    }
+    return text;
+  }
+
   function showError(message) {
-    els.generalError.textContent = `error: ${message}`;
+    els.generalError.textContent = `error: ${friendlyError(message)}`;
     els.generalError.style.display = 'block';
   }
   function clearError() {
     els.generalError.style.display = 'none';
     els.generalError.textContent = '';
+  }
+
+  function clearDecisionOutputs({ clearInputs = false } = {}) {
+    els.testResult.hidden = true;
+    els.testTrace.hidden = true;
+    els.testTrace.innerHTML = '';
+    els.batchResults.hidden = true;
+    els.batchResults.innerHTML = '';
+    els.batchStatus.textContent = '';
+    if (clearInputs) {
+      els.test.value = '';
+      els.batch.value = '';
+    }
+  }
+
+  function dfaTraceDetail(trace) {
+    if (trace.accepted) return `Halted in ${trace.finalState} ∈ F`;
+    if (trace.reason) return trace.reason;
+    return trace.finalState ? `Halted in ${trace.finalState} ∉ F` : 'Halted outside F';
+  }
+
+  function nfaTraceDetail(trace) {
+    if (trace.reason) return trace.reason;
+    return trace.accepted
+      ? `Frontier ${formatSet(trace.finalStates)} intersects F`
+      : `Frontier ${formatSet(trace.finalStates)} misses F`;
+  }
+
+  function renderTraceMarkup(trace) {
+    if (!trace?.steps?.length) return '';
+    const usesFrontier = Array.isArray(trace.steps[0].states);
+    if (usesFrontier) {
+      return trace.steps
+        .map((step, i) => {
+          const stateMarkup = `<span class="state state--set">${formatSetHtml(step.states)}</span>`;
+          if (i === 0) return `<span class="trace__caption">ε*</span>${stateMarkup}`;
+          const title = `move: ${formatSet(step.moveStates)}; ε-closure: ${formatSet(step.states)}`;
+          return `<span class="arrow" title="${escapeHtml(title)}">—${escapeHtml(step.symbol)}→</span>${stateMarkup}`;
+        })
+        .join('');
+    }
+
+    return trace.steps
+      .map((step, i) =>
+        i === 0
+          ? `<span class="state">${escapeHtml(step.state)}</span>`
+          : `<span class="arrow">—${escapeHtml(step.symbol)}→</span><span class="state">${escapeHtml(step.state)}</span>`
+      )
+      .join('');
   }
 
   function renderTestResult({ accepted, input, detail, trace }) {
@@ -249,15 +447,9 @@ export function createWorkspace({ storage, user, onSignOut }) {
       : 'pill pill--reject-result';
     els.testResultChip.textContent = accepted ? 'accepted' : 'rejected';
     els.testResultDetail.textContent = detail ?? '';
-    if (trace?.steps && trace.steps.length > 1) {
+    if (trace?.steps && trace.steps.length > 0) {
       els.testTrace.hidden = false;
-      els.testTrace.innerHTML = trace.steps
-        .map((s, i) =>
-          i === 0
-            ? `<span class="state">${escapeHtml(s.state)}</span>`
-            : `<span class="arrow">—${escapeHtml(s.symbol)}→</span><span class="state">${escapeHtml(s.state)}</span>`
-        )
-        .join('');
+      els.testTrace.innerHTML = renderTraceMarkup(trace);
     } else {
       els.testTrace.hidden = true;
       els.testTrace.innerHTML = '';
@@ -274,23 +466,102 @@ export function createWorkspace({ storage, user, onSignOut }) {
         renderTestResult({
           accepted: t.accepted,
           input,
-          detail: t.accepted
-            ? `Halted in ${t.finalState} ∈ F`
-            : t.reason
-              ? t.reason
-              : `Halted outside F`,
+          detail: dfaTraceDetail(t),
           trace: { steps: t.steps },
         });
       } else {
-        const accepted = automaton.accepts(input);
+        const t = automaton.trace(input);
         renderTestResult({
-          accepted,
+          accepted: t.accepted,
           input,
-          detail: accepted
-            ? 'At least one computation path accepts.'
-            : 'No computation path accepts.',
+          detail: nfaTraceDetail(t),
+          trace: t,
         });
       }
+    } catch (err) {
+      if (err instanceof ValidationError || err instanceof EvaluationError) {
+        showError(err.message);
+      } else {
+        showError(err?.message ?? String(err));
+      }
+    }
+  }
+
+  function batchInputs() {
+    return els.batch.value
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => (line === EPSILON ? '' : line));
+  }
+
+  function decideWithTrace(automaton, input) {
+    if (state.type === 'DFA' && automaton instanceof DFA) {
+      const trace = automaton.trace(input);
+      return {
+        input,
+        accepted: trace.accepted,
+        detail: dfaTraceDetail(trace),
+      };
+    }
+    const trace = automaton.trace(input);
+    return {
+      input,
+      accepted: trace.accepted,
+      detail: nfaTraceDetail(trace),
+    };
+  }
+
+  function renderBatchResults(results) {
+    els.batchResults.hidden = results.length === 0;
+    els.batchStatus.textContent = results.length ? plural(results.length, 'case') : '';
+    els.batchResults.innerHTML = results.length
+      ? `
+        <table class="batch__table">
+          <thead>
+            <tr>
+              <th>input</th>
+              <th>verdict</th>
+              <th>detail</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${results
+              .map(
+                (result) => `
+                  <tr>
+                    <td><code>${escapeHtml(inputLabel(result.input))}</code></td>
+                    <td>
+                      <span class="pill ${result.accepted ? 'pill--accept-result' : 'pill--reject-result'}">
+                        ${result.accepted ? 'accepted' : 'rejected'}
+                      </span>
+                    </td>
+                    <td>${escapeHtml(result.detail)}</td>
+                  </tr>
+                `
+              )
+              .join('')}
+          </tbody>
+        </table>
+      `
+      : '';
+  }
+
+  function runBatch() {
+    clearError();
+    try {
+      const inputs = batchInputs();
+      if (inputs.length === 0) {
+        renderBatchResults([]);
+        els.batchStatus.textContent = 'No strings';
+        return;
+      }
+      if (inputs.length > MAX_BATCH_CASES) {
+        showError(`batch is limited to ${MAX_BATCH_CASES} strings`);
+        return;
+      }
+      const automaton = buildAutomaton();
+      renderBatchResults(inputs.map((input) => decideWithTrace(automaton, input)));
     } catch (err) {
       if (err instanceof ValidationError || err instanceof EvaluationError) {
         showError(err.message);
@@ -306,7 +577,18 @@ export function createWorkspace({ storage, user, onSignOut }) {
       const nfa = buildAutomaton();
       if (state.type === 'DFA') return;
       const dfa = nfaToDfa(nfa);
-      loadFromDefinition({ ...dfa.toJSON(), name: `${state.name || 'NFA'} → DFA` }, 'DFA');
+      loadFromDefinition(
+        {
+          ...dfa.toJSON(),
+          name: `${state.name || 'NFA'} → DFA`,
+          origin: dfa.origin,
+          provenance: {
+            title: 'Subset construction',
+            detail: 'Each DFA state is the ε-closure subset of source NFA states it represents.',
+          },
+        },
+        'DFA'
+      );
       flashStatus('subset construction complete');
     } catch (err) {
       showError(err?.message ?? 'Conversion failed');
@@ -319,7 +601,19 @@ export function createWorkspace({ storage, user, onSignOut }) {
       const dfa = buildAutomaton();
       if (!(dfa instanceof DFA)) return;
       const min = minimizeDfa(dfa);
-      loadFromDefinition({ ...min.toJSON(), name: `${state.name || 'DFA'} (minimal)` }, 'DFA');
+      loadFromDefinition(
+        {
+          ...min.toJSON(),
+          name: `${state.name || 'DFA'} (minimal)`,
+          origin: min.origin,
+          provenance: {
+            title: 'Minimization classes',
+            detail:
+              'Each minimized state is an equivalence class after unreachable states are removed.',
+          },
+        },
+        'DFA'
+      );
       flashStatus(`minimized to ${min.states.size} state${min.states.size === 1 ? '' : 's'}`);
     } catch (err) {
       showError(err?.message ?? 'Minimization failed');
@@ -348,8 +642,20 @@ export function createWorkspace({ storage, user, onSignOut }) {
     state.acceptStates = def.acceptStates ?? [];
     state.transitions = def.transitions ?? {};
     state.activeId = def.id ?? null;
+    state.origin = def.origin ?? null;
+    state.provenance =
+      def.provenance ??
+      (def.origin
+        ? {
+            title: 'State origin',
+            detail: 'Generated states are shown with the source states they represent.',
+          }
+        : null);
+    els.batch.value = batchText(def.tests ?? []);
     writeDefinitionToForm();
     renderTable();
+    renderProvenance();
+    clearDecisionOutputs();
   }
 
   function newAutomaton() {
@@ -364,8 +670,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
       },
       state.type
     );
-    els.test.value = '';
-    els.testResult.hidden = true;
+    clearDecisionOutputs({ clearInputs: true });
     clearError();
   }
 
@@ -395,7 +700,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
                 ${escapeHtml(item.definition.type ?? 'DFA')} · ${item.definition.states?.length ?? 0}q · ${stamp}
               </div>
             </div>
-            <button class="library__remove" data-action="delete" aria-label="Delete">
+            <button class="library__remove" data-action="delete" aria-label="Delete ${escapeHtml(item.name)}">
               <i data-lucide="trash-2"></i>
             </button>
           </div>
@@ -426,6 +731,12 @@ export function createWorkspace({ storage, user, onSignOut }) {
         return;
       }
       const definition = automaton.toJSON();
+      if (state.origin && state.provenance) {
+        definition.origin = state.origin;
+        definition.provenance = state.provenance;
+      }
+      const tests = batchInputs();
+      if (tests.length > 0) definition.tests = tests;
       const saved = await storage.save(user.id, {
         id: state.activeId,
         name: state.name,
@@ -441,19 +752,40 @@ export function createWorkspace({ storage, user, onSignOut }) {
 
   // ----------- wire events -----------
   $$('[role="tab"]').forEach((tab) => {
-    tab.addEventListener('click', () => setType(tab.dataset.type));
+    tab.addEventListener('click', () => {
+      setType(tab.dataset.type);
+      clearProvenance();
+      clearDecisionOutputs();
+      renderInspector();
+    });
   });
 
   ['name', 'states', 'alphabet', 'start', 'accept'].forEach((field) => {
     els[field].addEventListener('input', () => {
       readDefinitionFromForm();
+      pruneTransitionsForCurrentShape();
+      clearProvenance();
+      clearDecisionOutputs();
       renderTable();
     });
+  });
+
+  els.transitionTable.addEventListener('input', (event) => {
+    if (!event.target.matches('input[data-symbol]')) return;
+    readTableFromInputs();
+    clearProvenance();
+    clearDecisionOutputs();
+    renderInspector();
+    renderDiagram();
   });
 
   els.actionTest.addEventListener('click', runTest);
   els.test.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') runTest();
+  });
+  els.actionBatch.addEventListener('click', runBatch);
+  els.batch.addEventListener('input', () => {
+    els.batchStatus.textContent = '';
   });
   els.actionConvert.addEventListener('click', convertToDfa);
   els.actionMinimize.addEventListener('click', minimize);

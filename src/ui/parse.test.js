@@ -27,12 +27,14 @@ describe('built-in EXAMPLES', () => {
     const dfa = new DFA(EXAMPLES.DFA);
     expect(dfa.accepts('1')).toBe(true);
     expect(dfa.accepts('10')).toBe(false);
+    expect(EXAMPLES.DFA.tests).toContain('');
   });
 
   it('NFA example accepts strings containing 01', () => {
     const nfa = new NFA(EXAMPLES.NFA);
     expect(nfa.accepts('001')).toBe(true);
     expect(nfa.accepts('10')).toBe(false);
+    expect(EXAMPLES.NFA.tests).toContain('1001');
   });
 
   it('ε-NFA example matches a*b', () => {
@@ -40,5 +42,6 @@ describe('built-in EXAMPLES', () => {
     expect(nfa.accepts('b')).toBe(true);
     expect(nfa.accepts('aaab')).toBe(true);
     expect(nfa.accepts('a')).toBe(false);
+    expect(EXAMPLES.EPSILON_NFA.tests).toContain('aaab');
   });
 });

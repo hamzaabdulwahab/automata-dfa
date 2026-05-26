@@ -15,6 +15,10 @@ function asSet(values, label) {
   return set;
 }
 
+function sorted(set) {
+  return [...set].sort();
+}
+
 /**
  * NFA — also supports ε-NFA when transitions include the ε symbol.
  * transitions shape: { state: { symbol: [nextState, ...] } }
@@ -149,6 +153,62 @@ export class NFA {
       if (this.acceptStates.has(s)) return true;
     }
     return false;
+  }
+
+  trace(input) {
+    if (typeof input !== 'string') {
+      throw new EvaluationError('input must be a string');
+    }
+
+    let current = this.epsilonClosure(this.startState);
+    const steps = [
+      {
+        index: 0,
+        symbol: null,
+        states: sorted(current),
+      },
+    ];
+
+    const symbols = [...input];
+    for (let i = 0; i < symbols.length; i += 1) {
+      const symbol = symbols[i];
+      if (!this.alphabet.has(symbol)) {
+        return {
+          accepted: false,
+          rejectedAt: i,
+          reason: `symbol "${symbol}" not in alphabet`,
+          finalStates: sorted(current),
+          steps,
+        };
+      }
+
+      const before = current;
+      const moved = this.move(before, symbol);
+      current = this.epsilonClosureOfSet(moved);
+      steps.push({
+        index: i + 1,
+        symbol,
+        fromStates: sorted(before),
+        moveStates: sorted(moved),
+        states: sorted(current),
+      });
+
+      if (current.size === 0) {
+        return {
+          accepted: false,
+          rejectedAt: i,
+          reason: `no computation paths remain after "${symbol}" at position ${i}`,
+          finalStates: [],
+          steps,
+        };
+      }
+    }
+
+    return {
+      accepted: sorted(current).some((s) => this.acceptStates.has(s)),
+      finalStates: sorted(current),
+      steps,
+    };
   }
 
   toJSON() {

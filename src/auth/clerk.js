@@ -21,7 +21,6 @@ const DEV_USER = {
 
 export async function getClerk() {
   if (DEV_USER_ENABLED) {
-    console.info('[auth] Dev mode: using fake user because VITE_CLERK_PUBLISHABLE_KEY is not set.');
     return null;
   }
   if (clerkInstance) return clerkInstance;

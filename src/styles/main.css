@@ -23,7 +23,7 @@
   --color-reject-quiet: oklch(0.95 0.04 25);
 }
 
-:root[data-theme='dark'] {
+:root[data-theme="dark"] {
   /* Late-night reading desk: warm coffee brown surfaces, cream ink.
      Same hue family as the paper palette, lightness inverted. */
   --color-paper: oklch(0.185 0.014 60);
@@ -57,7 +57,7 @@
       background 200ms cubic-bezier(0.2, 0, 0, 1),
       color 200ms cubic-bezier(0.2, 0, 0, 1);
   }
-  html[data-theme='dark'] {
+  html[data-theme="dark"] {
     color-scheme: dark;
   }
 
@@ -469,6 +469,82 @@
     outline-offset: -2px;
   }
 
+  /* Structure diagram */
+  .diagram-panel {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--color-rule);
+  }
+  .diagram-panel__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .diagram {
+    min-height: 220px;
+    background: var(--color-paper-2);
+    border: 1px solid var(--color-rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .diagram svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 220px;
+  }
+  .diagram__empty {
+    margin: 0;
+    padding: 28px;
+    color: var(--color-ink-faint);
+    font-size: 0.8125rem;
+    font-style: italic;
+  }
+  .diagram__edge,
+  .diagram__start-edge {
+    fill: none;
+    stroke: var(--color-ink-faint);
+    stroke-width: 1.25;
+  }
+  .diagram__start-edge {
+    stroke: var(--color-accent);
+  }
+  .diagram__arrow {
+    fill: var(--color-ink-faint);
+  }
+  .diagram__state {
+    fill: var(--color-paper);
+    stroke: var(--color-rule-strong);
+    stroke-width: 1.25;
+  }
+  .diagram__state--accept {
+    stroke: var(--color-accept);
+  }
+  .diagram__accept-ring {
+    fill: none;
+    stroke: var(--color-accept);
+    stroke-width: 1;
+  }
+  .diagram__state-label,
+  .diagram__label {
+    font-family: var(--font-mono);
+    fill: var(--color-ink);
+  }
+  .diagram__state-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .diagram__label {
+    paint-order: stroke;
+    stroke: var(--color-paper-2);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+    font-size: 0.6875rem;
+    fill: var(--color-accent);
+  }
+
   /* Library list */
   .library {
     margin-top: 12px;
@@ -523,6 +599,149 @@
     color: var(--color-accent);
   }
 
+  /* Sidebar sections */
+  .side-section {
+    padding: 0 0 22px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .side-section:last-child {
+    margin-bottom: 0;
+  }
+  .side-section__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  /* Live inspector */
+  .inspector__summary {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .inspector__summary--ok {
+    color: var(--color-accept);
+  }
+  .inspector__summary--warn,
+  .inspector__summary--problem {
+    color: var(--color-accent);
+  }
+  .inspector__stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 12px;
+    border: 1px solid var(--color-rule);
+    background: var(--color-rule);
+  }
+  .inspector__stats span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 8px;
+    background: var(--color-paper-2);
+    color: var(--color-ink-faint);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .inspector__stats strong {
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .inspector__list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .inspector__item {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    gap: 7px;
+    color: var(--color-ink-muted);
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+  .inspector__mark {
+    font-family: var(--font-mono);
+    color: var(--color-ink-faint);
+  }
+  .inspector__item--ok {
+    color: var(--color-accept);
+  }
+  .inspector__item--problem,
+  .inspector__item--warn {
+    color: var(--color-ink);
+  }
+  .inspector__item--problem .inspector__mark,
+  .inspector__item--warn .inspector__mark {
+    color: var(--color-accent);
+  }
+
+  /* Transformation provenance */
+  .provenance {
+    margin-top: 18px;
+    padding: 18px 0 2px;
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .provenance__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .provenance__detail {
+    margin: 10px 0 0;
+    color: var(--color-ink-muted);
+    font-size: 0.8125rem;
+  }
+  .provenance__list {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    border-top: 1px solid var(--color-rule);
+    border-left: 1px solid var(--color-rule);
+  }
+  .provenance__list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+    padding: 9px 10px;
+    border-right: 1px solid var(--color-rule);
+    border-bottom: 1px solid var(--color-rule);
+    background: var(--color-paper-2);
+  }
+  .provenance__list code,
+  .provenance__list span {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+  .provenance__list code {
+    color: var(--color-accent);
+  }
+  .provenance__list span {
+    color: var(--color-ink-muted);
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+
   /* Result strip after testing a string */
   .verdict {
     display: flex;
@@ -545,9 +764,66 @@
     border-radius: 2px;
     background: var(--color-paper);
   }
+  .verdict__trace .state--set {
+    background: var(--color-paper-2);
+  }
   .verdict__trace .arrow {
     margin: 0 4px;
     color: var(--color-ink-faint);
+  }
+  .trace__caption {
+    margin-right: 5px;
+    color: var(--color-accent);
+    font-size: 0.6875rem;
+  }
+
+  /* Batch testing */
+  .batch {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--color-rule);
+  }
+  .batch__input {
+    min-height: 96px;
+    resize: vertical;
+  }
+  .batch__bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .batch__results {
+    margin-top: 14px;
+    overflow-x: auto;
+    border-top: 1px solid var(--color-rule);
+  }
+  .batch__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+  }
+  .batch__table th,
+  .batch__table td {
+    text-align: left;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--color-rule);
+    vertical-align: top;
+  }
+  .batch__table th {
+    color: var(--color-ink-muted);
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .batch__table code {
+    font-family: var(--font-mono);
+    color: var(--color-ink);
+  }
+  .batch__table td:last-child {
+    color: var(--color-ink-muted);
   }
 
   /* Editorial note (used for inline form errors and quiet captions) */
@@ -645,7 +921,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 18px 0;
+    padding-block: 18px;
     border-bottom: 1px solid var(--color-rule);
   }
   .topbar__meta {
@@ -668,6 +944,25 @@
   @media (max-width: 640px) {
     .topbar__email {
       display: none !important;
+    }
+    .btn,
+    .btn--sm,
+    .segmented__item {
+      min-height: 44px;
+    }
+    .theme-toggle {
+      width: 44px;
+      height: 44px;
+    }
+    .library__remove {
+      opacity: 1;
+      padding: 8px;
+    }
+    .diagram {
+      min-height: 190px;
+    }
+    .diagram svg {
+      min-height: 190px;
     }
   }
 
@@ -777,11 +1072,17 @@
   .theme-toggle .lucide.sun {
     display: none;
   }
-  .theme-toggle[data-theme='dark'] .lucide.moon {
+  .theme-toggle[data-theme="dark"] .lucide.moon {
     display: none;
   }
-  .theme-toggle[data-theme='dark'] .lucide.sun {
+  .theme-toggle[data-theme="dark"] .lucide.sun {
     display: inline-block;
+  }
+  @media (max-width: 640px) {
+    .theme-toggle {
+      width: 44px;
+      height: 44px;
+    }
   }
 
   /* Utility for the accent ink */

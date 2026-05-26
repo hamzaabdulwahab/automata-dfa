@@ -21,6 +21,7 @@ export const EXAMPLES = {
       q0: { 0: 'q0', 1: 'q1' },
       q1: { 0: 'q0', 1: 'q1' },
     },
+    tests: ['', '0', '1', '1010', '1011'],
   },
   NFA: {
     name: 'Contains 01',
@@ -33,6 +34,7 @@ export const EXAMPLES = {
       q1: { 1: ['q2'] },
       q2: { 0: ['q2'], 1: ['q2'] },
     },
+    tests: ['', '01', '001', '10', '1001'],
   },
   EPSILON_NFA: {
     name: 'a*b (with ε)',
@@ -44,5 +46,6 @@ export const EXAMPLES = {
       s: { ε: ['a'] },
       a: { a: ['a'], b: ['b'] },
     },
+    tests: ['', 'b', 'ab', 'aaab', 'ba'],
   },
 };

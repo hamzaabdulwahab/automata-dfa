@@ -34,7 +34,9 @@ export function setTheme(theme, { persist = true } = {}) {
   }
   // Update the browser chrome color to match
   const themeColor = theme === 'dark' ? '#2a241e' : '#fbf7ed';
-  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', themeColor));
+  document
+    .querySelectorAll('meta[name="theme-color"]')
+    .forEach((m) => m.setAttribute('content', themeColor));
 }
 
 export function toggleTheme() {

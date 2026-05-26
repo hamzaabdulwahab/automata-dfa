@@ -30,7 +30,7 @@ async function init() {
       $('#google-signin')?.setAttribute('disabled', 'true');
       return;
     }
-    console.warn('Auth init warning:', err);
+    showError(err?.message ?? 'Authentication could not start.');
   }
 
   $('#google-signin')?.addEventListener('click', async () => {
@@ -38,7 +38,6 @@ async function init() {
     try {
       await signInWithGoogle({ redirectUrl: new URL('/', window.location.origin).toString() });
     } catch (err) {
-      console.error(err);
       setBusy(false);
       showError(err?.message ?? 'sign-in failed');
     }

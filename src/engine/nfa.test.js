@@ -141,3 +141,57 @@ describe('ε-NFA', () => {
     expect(() => aStarB().accepts('abx')).toThrow(EvaluationError);
   });
 });
+
+describe('NFA.trace', () => {
+  it('returns the reachable frontier after each symbol', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['0', '1'],
+      transitions: {
+        q0: { 0: ['q0', 'q1'], 1: ['q0'] },
+        q1: { 1: ['q2'] },
+      },
+      startState: 'q0',
+      acceptStates: ['q2'],
+    });
+
+    const result = nfa.trace('01');
+    expect(result.accepted).toBe(true);
+    expect(result.finalStates).toEqual(['q0', 'q2']);
+    expect(result.steps.map((s) => s.states)).toEqual([['q0'], ['q0', 'q1'], ['q0', 'q2']]);
+  });
+
+  it('includes epsilon closure in each frontier', () => {
+    const nfa = new NFA({
+      states: ['s', 'a', 'b'],
+      alphabet: ['a', 'b'],
+      transitions: {
+        s: { ε: ['a'] },
+        a: { a: ['a'], b: ['b'] },
+      },
+      startState: 's',
+      acceptStates: ['b'],
+    });
+
+    const result = nfa.trace('ab');
+    expect(result.accepted).toBe(true);
+    expect(result.steps[0].states).toEqual(['a', 's']);
+    expect(result.steps[1].moveStates).toEqual(['a']);
+    expect(result.steps[2].states).toEqual(['b']);
+  });
+
+  it('returns a rejection reason when no paths remain', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1'],
+      alphabet: ['a', 'b'],
+      transitions: { q0: { a: ['q1'] } },
+      startState: 'q0',
+      acceptStates: ['q1'],
+    });
+
+    const result = nfa.trace('ab');
+    expect(result.accepted).toBe(false);
+    expect(result.reason).toMatch(/no computation paths remain/);
+    expect(result.finalStates).toEqual([]);
+  });
+});
