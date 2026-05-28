@@ -15,11 +15,11 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem('automata-dfa:theme');
-          if (t !== 'light' && t !== 'dark') {
-            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          var t = localStorage.getItem("automata-dfa:theme");
+          if (t !== "light" && t !== "dark") {
+            t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
           }
-          document.documentElement.setAttribute('data-theme', t);
+          document.documentElement.setAttribute("data-theme", t);
         } catch (e) {}
       })();
     </script>
@@ -27,8 +27,11 @@
   <body>
     <main style="min-height: 100dvh; display: grid; place-items: center; padding: 24px">
       <section style="text-align: center; max-width: 360px">
-        <p class="eyebrow" style="margin-bottom: 14px">Verifying with Google</p>
-        <h1 class="h1" style="font-family: var(--font-display); font-weight: 450; font-size: 1.5rem; letter-spacing: -0.015em">
+        <p class="eyebrow" style="margin-bottom: 14px">Verifying identity</p>
+        <h1
+          class="h1"
+          style="font-family: var(--font-display); font-weight: 450; font-size: 1.5rem; letter-spacing: -0.015em"
+        >
           One moment.
         </h1>
         <p

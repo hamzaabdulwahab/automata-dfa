@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Automata Studio** — a single-page web app for building, testing, converting and minimizing finite automata (DFA, NFA, ε-NFA). Two pages: `auth.html` (Google sign-in via Clerk) and `index.html` (the workspace).
+**Automata Studio** — a single-page web app for building, testing, converting and minimizing finite automata (DFA, NFA, ε-NFA). Two pages: `auth.html` (Google, GitHub, Microsoft sign-in via Firebase) and `index.html` (the workspace).
 
 Deployed to Vercel as a static Vite build.
 
@@ -13,7 +13,7 @@ Deployed to Vercel as a static Vite build.
 - **Vite 6** — build tool + dev server. Multi-page input (`index.html`, `auth.html`).
 - **Tailwind CSS v4** — via `@tailwindcss/vite`. Design tokens in `@theme` block at the top of `src/styles/main.css`.
 - **Vitest 2 + happy-dom** — test runner. Test-setup at `src/test-setup.js` installs a Map-backed `localStorage` shim because Node 26's experimental built-in `localStorage` is gated on a CLI flag and shadows happy-dom's.
-- **Clerk** (`@clerk/clerk-js`) — auth. Google OAuth only. Publishable key in `VITE_CLERK_PUBLISHABLE_KEY`.
+- **Firebase Authentication** — auth. Google and GitHub OAuth. Configured via `VITE_FIREBASE_API_KEY`, etc.
 - **Lucide icons** — imported by name in `src/ui/icons.js` and rendered via `data-lucide` attributes.
 
 ## Module layout
@@ -27,7 +27,7 @@ src/
     convert.js    nfaToDfa (subset construction), minimizeDfa (partition refinement)
     index.js      Barrel re-export
   auth/
-    clerk.js      Clerk wrapper + dev-mode fake user (DEV builds only)
+    firebase.js   Firebase wrapper + dev-mode fake user (DEV builds only)
   storage/
     local.js      localStorageAdapter — implements { list, save, get, remove }, user-scoped
   ui/
@@ -57,8 +57,13 @@ src/
 
 ## Auth dev shim
 
-`src/auth/clerk.js` short-circuits to a fake `dev-user` when `import.meta.env.DEV && !VITE_CLERK_PUBLISHABLE_KEY`. The shim is tree-shaken in production builds. The fake user is suppressed on `/auth.html` so the sign-in UI is still viewable in dev.
+`src/auth/firebase.js` short-circuits to a fake `dev-user` when `import.meta.env.DEV && !VITE_FIREBASE_API_KEY`. The shim is tree-shaken in production builds. The fake user is suppressed on `/auth.html` so the sign-in UI is still viewable in dev.
 
 ## Environment variables
 
-- `VITE_CLERK_PUBLISHABLE_KEY` — Clerk publishable key (safe to expose, public client identifier). Set this in Vercel project env for prod. See `.env.example`.
+- `VITE_FIREBASE_API_KEY` — Firebase API key.
+- `VITE_FIREBASE_AUTH_DOMAIN` — Firebase Auth Domain.
+- `VITE_FIREBASE_PROJECT_ID` — Firebase Project ID.
+- `VITE_FIREBASE_STORAGE_BUCKET` — Firebase Storage Bucket.
+- `VITE_FIREBASE_MESSAGING_SENDER_ID` — Firebase Messaging Sender ID.
+- `VITE_FIREBASE_APP_ID` — Firebase App ID.

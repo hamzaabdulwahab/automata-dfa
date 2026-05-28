@@ -1,7 +1,7 @@
 import './styles/main.css';
 import { renderIcons } from './ui/icons.js';
 import { mountThemeToggle } from './ui/theme.js';
-import { requireUser, signOut, AuthConfigError } from './auth/clerk.js';
+import { requireUser, signOut, AuthConfigError } from './auth/firebase.js';
 import { localStorageAdapter } from './storage/local.js';
 import { createWorkspace } from './ui/workspace.js';
 

@@ -1,7 +1,12 @@
 import './styles/main.css';
 import { renderIcons } from './ui/icons.js';
 import { mountThemeToggle } from './ui/theme.js';
-import { signInWithGoogle, redirectIfSignedIn, AuthConfigError } from './auth/clerk.js';
+import {
+  signInWithGoogle,
+  signInWithGithub,
+  redirectIfSignedIn,
+  AuthConfigError,
+} from './auth/firebase.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -12,11 +17,19 @@ function showError(message) {
   el.style.display = 'block';
 }
 
-function setBusy(busy) {
-  const btn = $('#google-signin');
-  if (!btn) return;
-  btn.disabled = busy;
-  if (busy) btn.textContent = 'Redirecting…';
+function setBusy(clickedBtn, busy) {
+  const buttons = document.querySelectorAll('.btn-oauth');
+  buttons.forEach((btn) => {
+    btn.disabled = busy;
+  });
+  if (busy && clickedBtn) {
+    clickedBtn.dataset.originalText = clickedBtn.innerHTML;
+    clickedBtn.textContent = 'Redirecting…';
+  } else if (!busy && clickedBtn) {
+    if (clickedBtn.dataset.originalText) {
+      clickedBtn.innerHTML = clickedBtn.dataset.originalText;
+    }
+  }
 }
 
 async function init() {
@@ -27,18 +40,32 @@ async function init() {
   } catch (err) {
     if (err instanceof AuthConfigError) {
       showError(err.message);
-      $('#google-signin')?.setAttribute('disabled', 'true');
+      document
+        .querySelectorAll('.btn-oauth')
+        .forEach((btn) => btn.setAttribute('disabled', 'true'));
       return;
     }
     showError(err?.message ?? 'Authentication could not start.');
   }
 
-  $('#google-signin')?.addEventListener('click', async () => {
-    setBusy(true);
+  const googleBtn = $('#google-signin');
+  googleBtn?.addEventListener('click', async () => {
+    setBusy(googleBtn, true);
     try {
       await signInWithGoogle({ redirectUrl: new URL('/', window.location.origin).toString() });
     } catch (err) {
-      setBusy(false);
+      setBusy(googleBtn, false);
+      showError(err?.message ?? 'sign-in failed');
+    }
+  });
+
+  const githubBtn = $('#github-signin');
+  githubBtn?.addEventListener('click', async () => {
+    setBusy(githubBtn, true);
+    try {
+      await signInWithGithub({ redirectUrl: new URL('/', window.location.origin).toString() });
+    } catch (err) {
+      setBusy(githubBtn, false);
       showError(err?.message ?? 'sign-in failed');
     }
   });

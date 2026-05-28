@@ -13,7 +13,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@clerk/clerk-js": "^5.42.0",
+    "firebase": "^12.13.0",
     "lucide": "^0.460.0"
   },
   "devDependencies": {

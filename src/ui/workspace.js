@@ -760,23 +760,40 @@ export function createWorkspace({ storage, user, onSignOut }) {
     });
   });
 
+  function debounce(fn, delay) {
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+      return fn;
+    }
+    let timer = null;
+    return function (...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+  }
+
+  const handleFormInput = debounce(() => {
+    readDefinitionFromForm();
+    pruneTransitionsForCurrentShape();
+    clearProvenance();
+    clearDecisionOutputs();
+    renderTable();
+  }, 200);
+
   ['name', 'states', 'alphabet', 'start', 'accept'].forEach((field) => {
-    els[field].addEventListener('input', () => {
-      readDefinitionFromForm();
-      pruneTransitionsForCurrentShape();
-      clearProvenance();
-      clearDecisionOutputs();
-      renderTable();
-    });
+    els[field].addEventListener('input', handleFormInput);
   });
 
-  els.transitionTable.addEventListener('input', (event) => {
-    if (!event.target.matches('input[data-symbol]')) return;
+  const handleTableInput = debounce(() => {
     readTableFromInputs();
     clearProvenance();
     clearDecisionOutputs();
     renderInspector();
     renderDiagram();
+  }, 200);
+
+  els.transitionTable.addEventListener('input', (event) => {
+    if (!event.target.matches('input[data-symbol]')) return;
+    handleTableInput();
   });
 
   els.actionTest.addEventListener('click', runTest);

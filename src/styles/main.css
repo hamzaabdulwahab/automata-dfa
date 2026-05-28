@@ -869,8 +869,9 @@
     letter-spacing: -0.01em;
   }
 
-  /* Google sign-in button — official "dark theme" variant: ink surface, color G */
-  .btn-google {
+  /* Google & generic OAuth sign-in buttons — official "dark theme" variant: ink surface, color G */
+  .btn-google,
+  .btn-oauth {
     width: 100%;
     height: 46px;
     background: var(--color-ink);
@@ -889,16 +890,19 @@
     cursor: pointer;
     transition: background 150ms cubic-bezier(0.2, 0, 0, 1);
   }
-  .btn-google:hover:not([disabled]) {
+  .btn-google:hover:not([disabled]),
+  .btn-oauth:hover:not([disabled]) {
     background: var(--color-ink-hover);
   }
-  .btn-google[disabled] {
+  .btn-google[disabled],
+  .btn-oauth[disabled] {
     background: var(--color-paper-2);
     color: var(--color-ink-faint);
     border-color: var(--color-rule);
     cursor: not-allowed;
   }
-  .btn-google__mark {
+  .btn-google__mark,
+  .btn-oauth__mark {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -906,11 +910,13 @@
     height: 18px;
     flex-shrink: 0;
   }
-  .btn-google__mark svg {
+  .btn-google__mark svg,
+  .btn-oauth__mark svg {
     width: 18px;
     height: 18px;
   }
-  .btn-google[disabled] .btn-google__mark svg {
+  .btn-google[disabled] .btn-google__mark svg,
+  .btn-oauth[disabled] .btn-oauth__mark svg {
     opacity: 0.4;
     filter: grayscale(1);
   }
@@ -1088,6 +1094,25 @@
   /* Utility for the accent ink */
   .accent {
     color: var(--color-accent);
+  }
+
+  /* Auth page footer */
+  .auth-footer {
+    padding-top: 24px;
+    padding-bottom: 24px;
+    font-size: 0.75rem;
+    color: var(--color-ink-faint);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-top: 1px solid var(--color-rule);
+  }
+  @media (max-width: 640px) {
+    .auth-footer {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
   }
 }
 

@@ -42,3 +42,8 @@ qa-*.png
 qa-*.jpg
 prod-*.png
 ux-*.png
+
+# Agent / IDE configs
+.agent/
+.claude/
+.remember/
