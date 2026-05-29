@@ -1,0 +1,129 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: automata
+    // Document ID: {automatonId} (Generated UUID or push ID)
+    // Fields:
+    //   - userId: string (required) - UID of the owner
+    //   - name: string (required, length 1-100) - Name of the automaton
+    //   - definition: map (required) - The automaton JSON definition
+    //     - type: string (required) - 'DFA', 'NFA', 'EPSILON_NFA', or 'ε-NFA'
+    //     - states: list of strings (required, size <= 200) - All state names
+    //     - alphabet: list of strings (required, size <= 100) - Supported symbols
+    //     - acceptStates: list of strings (required, size <= 200) - Final states
+    //     - transitions: map (required, size <= 200) - Transitions lookup table
+    //     - startState: string (optional, size <= 50) - Start state for DFA
+    //     - startStates: list of strings (optional, size <= 200) - Start states for NFA
+    //     - tests: list of strings (optional, size <= 100) - Batch test strings
+    //     - origin: map (optional, size <= 200) - Provenance origin state mappings
+    //     - provenance: map (optional) - Conversion detail card metadata
+    //       - title: string (required if provenance exists, size <= 200)
+    //       - detail: string (required if provenance exists, size <= 1000)
+    //   - savedAt: int (required, positive) - Milliseconds timestamp since epoch
+    //   - updatedAt: int (required, positive) - Milliseconds timestamp since epoch
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user owns the resource based on userId in path/doc
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Verify userId hasn't been tampered with on create
+    function userIdUnchanged() {
+      return !('userId' in request.resource.data) ||
+        request.resource.data.userId == request.auth.uid;
+    }
+
+    // Ensure userId field is not modified on update
+    function userIdNotModified() {
+      return !('userId' in request.resource.data) ||
+        request.resource.data.userId == resource.data.userId;
+    }
+
+    // Validate that document has only allowed root keys
+    function hasOnlyAllowedFields(data, allowedKeys) {
+      return data.keys().hasOnly(allowedKeys);
+    }
+
+    // Domain validation function (used for BOTH create and update)
+    function isValidAutomaton(data) {
+      return hasOnlyAllowedFields(data, ['userId', 'name', 'definition', 'savedAt', 'updatedAt']) &&
+        data.userId is string &&
+        data.userId.size() > 0 &&
+        data.userId.size() <= 128 &&
+        data.name is string &&
+        data.name.size() >= 1 &&
+        data.name.size() <= 100 &&
+        data.savedAt is int &&
+        data.savedAt > 0 &&
+        data.updatedAt is int &&
+        data.updatedAt > 0 &&
+        
+        // Definition sub-map validation
+        data.definition is map &&
+        data.definition.keys().hasAll(['type', 'states', 'alphabet', 'acceptStates', 'transitions']) &&
+        data.definition.type is string &&
+        data.definition.type in ['DFA', 'NFA', 'EPSILON_NFA', 'ε-NFA'] &&
+        data.definition.states is list &&
+        data.definition.states.size() <= 200 &&
+        data.definition.alphabet is list &&
+        data.definition.alphabet.size() <= 100 &&
+        data.definition.acceptStates is list &&
+        data.definition.acceptStates.size() <= 200 &&
+        data.definition.transitions is map &&
+        data.definition.transitions.keys().size() <= 200 &&
+        
+        // Optional fields validation
+        (!('startState' in data.definition) || (data.definition.startState is string && data.definition.startState.size() <= 50)) &&
+        (!('startStates' in data.definition) || (data.definition.startStates is list && data.definition.startStates.size() <= 200)) &&
+        (!('tests' in data.definition) || (data.definition.tests is list && data.definition.tests.size() <= 100)) &&
+        (!('origin' in data.definition) || (data.definition.origin is map && data.definition.origin.keys().size() <= 200)) &&
+        (!('provenance' in data.definition) || (
+          data.definition.provenance is map &&
+          data.definition.provenance.keys().hasOnly(['title', 'detail']) &&
+          data.definition.provenance.title is string &&
+          data.definition.provenance.title.size() <= 200 &&
+          data.definition.provenance.detail is string &&
+          data.definition.provenance.detail.size() <= 1000
+        ));
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    match /automata/{automatonId} {
+      // Owner-only read access (PII/private code protection)
+      allow read: if isOwner(resource.data.userId);
+
+      // Owner-only create access with validation
+      allow create: if isOwner(request.resource.data.userId) &&
+                      userIdUnchanged() &&
+                      isValidAutomaton(request.resource.data);
+
+      // Owner-only update access with validation and owner integrity checks
+      allow update: if isOwner(resource.data.userId) &&
+                      isOwner(request.resource.data.userId) &&
+                      userIdNotModified() &&
+                      isValidAutomaton(request.resource.data);
+
+      // Owner-only deletion
+      allow delete: if isOwner(resource.data.userId);
+    }
+  }
+}

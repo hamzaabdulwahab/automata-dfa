@@ -195,3 +195,222 @@ describe('NFA.trace', () => {
     expect(result.finalStates).toEqual([]);
   });
 });
+
+describe('NFA with multiple start states and advanced epsilon rules', () => {
+  it('supports multiple start states', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { a: ['q2'] },
+        q1: { a: ['q2'] },
+      },
+      startStates: ['q0', 'q1'],
+      acceptStates: ['q2'],
+    });
+    expect(nfa.accepts('a')).toBe(true);
+  });
+
+  it('one of many start states is final → empty string accepted', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1'],
+      alphabet: ['a'],
+      transitions: {},
+      startStates: ['q0', 'q1'],
+      acceptStates: ['q1'],
+    });
+    expect(nfa.accepts('')).toBe(true);
+  });
+
+  it('empty string rejected when no start state is final', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1'],
+      alphabet: ['a'],
+      transitions: {},
+      startStates: ['q0', 'q1'],
+      acceptStates: [],
+    });
+    expect(nfa.accepts('')).toBe(false);
+  });
+
+  it('one path dies but another accepts', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { a: ['q2'] },
+        q1: {},
+      },
+      startStates: ['q0', 'q1'],
+      acceptStates: ['q2'],
+    });
+    expect(nfa.accepts('a')).toBe(true);
+  });
+
+  it('all paths die → reject', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: {},
+        q1: {},
+      },
+      startStates: ['q0', 'q1'],
+      acceptStates: ['q2'],
+    });
+    expect(nfa.accepts('a')).toBe(false);
+  });
+
+  it('ε-transition blocked in NFA mode (allowEpsilon: false)', () => {
+    expect(() => {
+      new NFA({
+        states: ['q0', 'q1'],
+        alphabet: ['a'],
+        transitions: {
+          q0: { ε: ['q1'] },
+        },
+        startStates: ['q0'],
+        acceptStates: ['q1'],
+        allowEpsilon: false,
+      });
+    }).toThrow(ValidationError);
+  });
+
+  it('large active state set (5+ states branching)', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2', 'q3', 'q4', 'q5'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { a: ['q1', 'q2', 'q3', 'q4', 'q5'] },
+      },
+      startStates: ['q0'],
+      acceptStates: ['q5'],
+    });
+    expect(nfa.accepts('a')).toBe(true);
+  });
+
+  it('ε self-loop (q0 --ε--> q0) does not loop infinitely', () => {
+    const nfa = new NFA({
+      states: ['q0'],
+      alphabet: ['a'],
+      transitions: { q0: { ε: ['q0'] } },
+      startStates: ['q0'],
+      acceptStates: ['q0'],
+    });
+    expect(nfa.epsilonClosure('q0')).toEqual(new Set(['q0']));
+    expect(nfa.accepts('')).toBe(true);
+  });
+
+  it('multiple start states with ε-closures', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2', 'q3'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { ε: ['q2'] },
+        q1: { ε: ['q3'] },
+      },
+      startStates: ['q0', 'q1'],
+      acceptStates: ['q2', 'q3'],
+    });
+    expect(nfa.accepts('')).toBe(true);
+  });
+
+  it('ε-transition from start directly to final → empty string accepted', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { ε: ['q1'] },
+      },
+      startStates: ['q0'],
+      acceptStates: ['q1'],
+    });
+    expect(nfa.accepts('')).toBe(true);
+  });
+
+  it('ε chain: q0→q1→q2 all via ε, q2 is final → empty string accepted', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { ε: ['q1'] },
+        q1: { ε: ['q2'] },
+      },
+      startStates: ['q0'],
+      acceptStates: ['q2'],
+    });
+    expect(nfa.accepts('')).toBe(true);
+  });
+
+  it('normal transition followed by ε transition', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { a: ['q1'] },
+        q1: { ε: ['q2'] },
+      },
+      startStates: ['q0'],
+      acceptStates: ['q2'],
+    });
+    expect(nfa.accepts('a')).toBe(true);
+  });
+
+  it('ε transition followed by normal transition', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { ε: ['q1'] },
+        q1: { a: ['q2'] },
+      },
+      startStates: ['q0'],
+      acceptStates: ['q2'],
+    });
+    expect(nfa.accepts('a')).toBe(true);
+  });
+
+  it('final state reachable only after ε-closure', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { a: ['q1'] },
+        q1: { ε: ['q2'] },
+      },
+      startStates: ['q0'],
+      acceptStates: ['q2'],
+    });
+    expect(nfa.accepts('a')).toBe(true);
+  });
+
+  it('multiple epsilon paths (q0 --ε--> q1, q0 --ε--> q2)', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { ε: ['q1', 'q2'] },
+      },
+      startStates: ['q0'],
+      acceptStates: ['q2'],
+    });
+    expect(nfa.accepts('')).toBe(true);
+  });
+
+  it('NFA.trace with multiple start states verifies correct frontier', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { a: ['q2'] },
+        q1: { a: ['q2'] },
+      },
+      startStates: ['q0', 'q1'],
+      acceptStates: ['q2'],
+    });
+    const result = nfa.trace('a');
+    expect(result.accepted).toBe(true);
+    expect(result.steps[0].states).toEqual(['q0', 'q1']);
+    expect(result.steps[1].states).toEqual(['q2']);
+  });
+});

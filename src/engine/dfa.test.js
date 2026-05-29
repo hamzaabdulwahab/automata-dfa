@@ -244,4 +244,66 @@ describe('DFA edge cases', () => {
     expect(restored.accepts('1011')).toBe(true);
     expect(restored.accepts('1010')).toBe(false);
   });
+
+  it('self-loop DFA q0 --a--> q0, q0 is accept', () => {
+    const dfa = new DFA({
+      states: ['q0'],
+      alphabet: ['a'],
+      transitions: { q0: { a: 'q0' } },
+      startState: 'q0',
+      acceptStates: ['q0'],
+    });
+    expect(dfa.accepts('')).toBe(true);
+    expect(dfa.accepts('a')).toBe(true);
+    expect(dfa.accepts('aaaaa')).toBe(true);
+  });
+
+  it('no final states DFA', () => {
+    const dfa = new DFA({
+      states: ['q0', 'q1'],
+      alphabet: ['a'],
+      transitions: { q0: { a: 'q1' }, q1: { a: 'q0' } },
+      startState: 'q0',
+      acceptStates: [],
+    });
+    expect(dfa.accepts('')).toBe(false);
+    expect(dfa.accepts('a')).toBe(false);
+    expect(dfa.accepts('aa')).toBe(false);
+  });
+
+  it('DFA cell with comma target throws ValidationError', () => {
+    expect(() => {
+      new DFA({
+        states: ['q0', 'q1', 'q2'],
+        alphabet: ['a'],
+        transitions: {
+          q0: { a: 'q1,q2' },
+        },
+        startState: 'q0',
+        acceptStates: ['q1'],
+      });
+    }).toThrow(ValidationError);
+  });
+
+  it('final state reached mid-input but not at end is rejected', () => {
+    const dfa = new DFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { a: 'q1' },
+        q1: { a: 'q2' },
+        q2: { a: 'q2' },
+      },
+      startState: 'q0',
+      acceptStates: ['q1'],
+    });
+    expect(dfa.accepts('a')).toBe(true);
+    expect(dfa.accepts('aa')).toBe(false);
+  });
+
+  it('handles long input string', () => {
+    const dfa = endsInOne();
+    expect(dfa.accepts('00000000000000000001')).toBe(true);
+    expect(dfa.accepts('00000000000000000000')).toBe(false);
+  });
 });

@@ -160,4 +160,21 @@ describe('minimizeDfa', () => {
     expect(languageEquivalent(nfa, min, allBinaryStringsUpTo(6))).toEqual({ equivalent: true });
     expect(min.states.size).toBeLessThanOrEqual(dfa.states.size);
   });
+
+  it('converts an NFA with multiple start states correctly', () => {
+    const nfa = new NFA({
+      states: ['q0', 'q1', 'q2'],
+      alphabet: ['a'],
+      transitions: {
+        q0: { a: ['q2'] },
+        q1: {},
+      },
+      startStates: ['q0', 'q1'],
+      acceptStates: ['q2'],
+    });
+    const dfa = nfaToDfa(nfa);
+    expect(dfa.accepts('')).toBe(false);
+    expect(dfa.accepts('a')).toBe(true);
+    expect(dfa.accepts('aa')).toBe(false);
+  });
 });

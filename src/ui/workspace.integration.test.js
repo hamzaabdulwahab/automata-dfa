@@ -110,4 +110,24 @@ describe('workspace integration', () => {
 
     expect($('#empty-onboarding').hidden).toBe(false);
   });
+
+  it('supports entering multiple start states for NFA and verifies they render correctly', () => {
+    const { $, $$ } = mountWorkspace();
+
+    $('[data-type="NFA"]').click();
+
+    $('#input-states').value = 'q0, q1, q2';
+    $('#input-states').dispatchEvent(new Event('input', { bubbles: true }));
+    $('#input-alphabet').value = 'a';
+    $('#input-alphabet').dispatchEvent(new Event('input', { bubbles: true }));
+
+    $('#input-start').value = 'q0, q1';
+    $('#input-start').dispatchEvent(new Event('input', { bubbles: true }));
+
+    expect($('#label-start-name').textContent).toBe('Start states');
+    expect($('#hint-start').textContent).toContain('Comma-separated');
+
+    const startPills = $$('.pill--start');
+    expect(startPills).toHaveLength(2);
+  });
 });

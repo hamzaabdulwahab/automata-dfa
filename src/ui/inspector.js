@@ -39,10 +39,22 @@ function countFilledTransitions(definition, symbols) {
 
 function reachableStates(definition) {
   const declared = new Set(definition.states);
-  if (!declared.has(definition.startState)) return new Set();
+  const startSet = new Set();
 
-  const reachable = new Set([definition.startState]);
-  const queue = [definition.startState];
+  if (definition.type === 'DFA' || !definition.startStates) {
+    if (definition.startState && declared.has(definition.startState)) {
+      startSet.add(definition.startState);
+    }
+  } else if (definition.startStates) {
+    for (const s of definition.startStates) {
+      if (declared.has(s)) startSet.add(s);
+    }
+  }
+
+  if (startSet.size === 0) return new Set();
+
+  const reachable = new Set(startSet);
+  const queue = [...startSet];
   while (queue.length) {
     const from = queue.shift();
     const row = definition.transitions[from] ?? {};
@@ -98,9 +110,25 @@ export function analyzeAutomaton(definition) {
   if (definition.states.length === 0) add('problem', 'Q is empty. Add at least one state.');
   if (definition.alphabet.length === 0)
     add('problem', 'Σ is empty. Add at least one input symbol.');
-  if (!definition.startState) add('problem', 'q₀ is empty. Choose one declared start state.');
-  else if (!stateSet.has(definition.startState))
-    add('problem', `q₀ = ${definition.startState} is not in Q.`);
+
+  if (definition.type === 'DFA') {
+    if (!definition.startState) {
+      add('problem', 'q₀ is empty. Choose one declared start state.');
+    } else if (!stateSet.has(definition.startState)) {
+      add('problem', `q₀ = ${definition.startState} is not in Q.`);
+    }
+  } else {
+    const startStates =
+      definition.startStates || (definition.startState ? [definition.startState] : []);
+    if (startStates.length === 0) {
+      add('problem', 'S is empty. Choose at least one declared start state.');
+    } else {
+      const invalidStarts = startStates.filter((s) => !stateSet.has(s));
+      if (invalidStarts.length > 0) {
+        add('problem', `Start states contains undeclared states: ${invalidStarts.join(', ')}.`);
+      }
+    }
+  }
 
   const duplicateStates = duplicates(definition.states);
   const duplicateSymbols = duplicates(definition.alphabet);
@@ -117,7 +145,8 @@ export function analyzeAutomaton(definition) {
   const unknownAccept = definition.acceptStates.filter((s) => !stateSet.has(s));
   if (unknownAccept.length)
     add('problem', `F contains undeclared states: ${unknownAccept.join(', ')}.`);
-  if (definition.acceptStates.length === 0) add('warn', 'F is empty, so every string will reject.');
+  if (definition.acceptStates.length === 0)
+    add('warn', 'This automaton has no final states, so it cannot accept any string.');
 
   const allowedSymbols = new Set(symbols);
   let unknownTargetCount = 0;
@@ -127,7 +156,10 @@ export function analyzeAutomaton(definition) {
       if (!allowedSymbols.has(symbol))
         add('problem', `δ(${from}, ${symbol}) uses a symbol outside Σ.`);
       if (definition.type === 'DFA' && typeof value === 'string' && value.includes(',')) {
-        add('problem', `δ(${from}, ${symbol}) lists multiple targets. DFA cells need one state.`);
+        add(
+          'problem',
+          `DFA allows only one transition per state-symbol pair. δ(${from}, ${symbol}) has multiple targets.`
+        );
       }
       for (const target of transitionTargets(value)) {
         if (!stateSet.has(target)) unknownTargetCount += 1;
@@ -144,12 +176,21 @@ export function analyzeAutomaton(definition) {
   }
 
   const reachable = reachableStates(definition);
-  const unreachable = definition.states.filter((s) => definition.startState && !reachable.has(s));
-  if (unreachable.length) add('warn', `Unreachable from q₀: ${unreachable.join(', ')}.`);
+  const startEmpty =
+    definition.type === 'DFA'
+      ? !definition.startState
+      : !definition.startStates || definition.startStates.length === 0;
+
+  const unreachable = definition.states.filter((s) => !startEmpty && !reachable.has(s));
+  if (unreachable.length) {
+    const fromLabel = definition.type === 'DFA' ? 'q₀' : 'S';
+    add('warn', `Unreachable from ${fromLabel}: ${unreachable.join(', ')}.`);
+  }
 
   const reachableAccepts = definition.acceptStates.filter((s) => reachable.has(s));
   if (definition.acceptStates.length > 0 && reachable.size > 0 && reachableAccepts.length === 0) {
-    add('warn', 'No accept state is reachable from q₀.');
+    const startLabel = definition.type === 'DFA' ? 'q₀' : 'S';
+    add('warn', `No accept state is reachable from ${startLabel}.`);
   }
 
   const productive = statesThatCanReachAccept(definition);
@@ -179,7 +220,9 @@ export function analyzeAutomaton(definition) {
       'ok',
       definition.type === 'DFA'
         ? 'Coherent DFA. Ready to decide strings.'
-        : 'Coherent NFA. Blank cells mean no branch.'
+        : definition.type === 'NFA'
+          ? 'Coherent NFA. Blank cells mean no branch.'
+          : 'Coherent ε-NFA. Ready to decide strings.'
     );
   }
 

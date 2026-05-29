@@ -27,7 +27,7 @@ export const EXAMPLES = {
     name: 'Contains 01',
     states: ['q0', 'q1', 'q2'],
     alphabet: ['0', '1'],
-    startState: 'q0',
+    startStates: ['q0'],
     acceptStates: ['q2'],
     transitions: {
       q0: { 0: ['q0', 'q1'], 1: ['q0'] },
@@ -40,7 +40,7 @@ export const EXAMPLES = {
     name: 'a*b (with ε)',
     states: ['s', 'a', 'b'],
     alphabet: ['a', 'b'],
-    startState: 's',
+    startStates: ['s'],
     acceptStates: ['b'],
     transitions: {
       s: { ε: ['a'] },

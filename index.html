@@ -128,6 +128,7 @@
               <span id="automaton-name-display">Untitled automaton</span>
             </h1>
             <p
+              id="epigraph"
               class="auth-epigraph"
               style="margin-top: 14px"
               title="A finite automaton: states Q, alphabet Σ, transition function δ, start state q₀, accept states F."
@@ -137,6 +138,7 @@
                 title="input alphabet"
                 >Σ</span
               >,&nbsp;<span class="accent" title="transition function">δ</span>,&nbsp;<span
+                id="epigraph-start"
                 class="accent"
                 title="start state"
                 >q<sub>0</sub></span
@@ -175,6 +177,15 @@
             </div>
           </div>
 
+          <!-- Mode Info Panel -->
+          <div
+            id="mode-info-panel"
+            class="info-panel-card"
+            style="margin-top: 16px; margin-bottom: 16px; display: none"
+          >
+            <p id="mode-info-text"></p>
+          </div>
+
           <!-- Transformation provenance -->
           <section id="provenance-panel" class="provenance" hidden aria-live="polite">
             <div class="provenance__head">
@@ -193,7 +204,7 @@
             <div class="onboarding">
               <div class="onboarding__head">
                 <p class="eyebrow">First time?</p>
-                <h2 class="h2" style="margin-top: 4px">Build your first DFA in three steps.</h2>
+                <h2 id="onboarding-title" class="h2" style="margin-top: 4px">Build your first DFA in three steps.</h2>
               </div>
               <ol class="onboarding__steps">
                 <li>
@@ -253,13 +264,16 @@
               </div>
               <div class="field">
                 <label for="input-start" class="field__label">
-                  <span class="field__label-name">Start state</span>
-                  <span class="field__sym" title="The state your automaton begins in. Conventionally written q₀."
+                  <span id="label-start-name" class="field__label-name">Start state</span>
+                  <span
+                    id="label-start-sym"
+                    class="field__sym"
+                    title="The state your automaton begins in. Conventionally written q₀."
                     >q<sub>0</sub></span
                   >
                 </label>
                 <input id="input-start" class="input input--mono" autocomplete="off" placeholder="q0" />
-                <span class="field__hint">The label of the single state where evaluation begins.</span>
+                <span id="hint-start" class="field__hint">The label of the single state where evaluation begins.</span>
               </div>
               <div class="field">
                 <label for="input-states" class="field__label">

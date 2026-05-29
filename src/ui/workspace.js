@@ -40,6 +40,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
     states: [],
     alphabet: [],
     startState: '',
+    startStates: [],
     acceptStates: [],
     transitions: {},
     activeId: null,
@@ -56,6 +57,14 @@ export function createWorkspace({ storage, user, onSignOut }) {
     alphabet: $('#input-alphabet'),
     start: $('#input-start'),
     accept: $('#input-accept'),
+    labelStartName: $('#label-start-name'),
+    labelStartSym: $('#label-start-sym'),
+    hintStart: $('#hint-start'),
+    onboardingTitle: $('#onboarding-title'),
+    modeInfoPanel: $('#mode-info-panel'),
+    modeInfoText: $('#mode-info-text'),
+    epigraphStart: $('#epigraph-start'),
+    epigraph: $('#epigraph'),
     hintEpsilon: $('#hint-epsilon'),
     transitionEmpty: $('#transition-empty'),
     transitionWrap: $('#transition-wrap'),
@@ -108,6 +117,77 @@ export function createWorkspace({ storage, user, onSignOut }) {
     els.hintEpsilon.hidden = type !== 'EPSILON_NFA';
     els.actionConvert.hidden = type === 'DFA';
     els.actionMinimize.hidden = type !== 'DFA';
+
+    // Update start state label, symbol, and hint dynamically
+    if (type === 'DFA') {
+      if (els.labelStartName) els.labelStartName.textContent = 'Start state';
+      if (els.labelStartSym) {
+        els.labelStartSym.innerHTML = 'q<sub>0</sub>';
+        els.labelStartSym.title = 'The state your automaton begins in. Conventionally written q₀.';
+      }
+      if (els.hintStart)
+        els.hintStart.textContent = 'The label of the single state where evaluation begins.';
+      if (els.start) els.start.placeholder = 'q0';
+
+      // Update epigraph
+      if (els.epigraphStart) {
+        els.epigraphStart.innerHTML = 'q<sub>0</sub>';
+        els.epigraphStart.title = 'start state';
+      }
+      if (els.epigraph) {
+        els.epigraph.title =
+          'A finite automaton: states Q, alphabet Σ, transition function δ, start state q₀, accept states F.';
+      }
+
+      // Onboarding title
+      if (els.onboardingTitle)
+        els.onboardingTitle.textContent = 'Build your first DFA in three steps.';
+
+      // Mode info panel
+      if (els.modeInfoPanel && els.modeInfoText) {
+        els.modeInfoPanel.style.display = 'block';
+        els.modeInfoText.innerHTML =
+          '<strong>DFA (Deterministic Finite Automaton)</strong>: Has exactly one start state and exactly one active state at any point. For every state and input symbol, there must be at most one transition in the UI.';
+      }
+    } else {
+      if (els.labelStartName) els.labelStartName.textContent = 'Start states';
+      if (els.labelStartSym) {
+        els.labelStartSym.innerHTML = 'S';
+        els.labelStartSym.title = 'The set of start states your NFA begins in. Written S ⊆ Q.';
+      }
+      if (els.hintStart)
+        els.hintStart.textContent =
+          'Comma-separated. NFA can begin in multiple states simultaneously.';
+      if (els.start) els.start.placeholder = 'q0, q1';
+
+      // Update epigraph
+      if (els.epigraphStart) {
+        els.epigraphStart.innerHTML = 'S';
+        els.epigraphStart.title = 'start states';
+      }
+      if (els.epigraph) {
+        els.epigraph.title =
+          'A finite automaton: states Q, alphabet Σ, transition function δ, start states S, accept states F.';
+      }
+
+      // Onboarding title
+      if (els.onboardingTitle) {
+        els.onboardingTitle.textContent = `Build your first ${type === 'NFA' ? 'NFA' : 'ε-NFA'} in three steps.`;
+      }
+
+      // Mode info panel
+      if (els.modeInfoPanel && els.modeInfoText) {
+        els.modeInfoPanel.style.display = 'block';
+        if (type === 'NFA') {
+          els.modeInfoText.innerHTML =
+            '<strong>NFA (Non-deterministic Finite Automaton)</strong>: Can have multiple start states and be in multiple active states simultaneously. Explores multiple possible paths at once. ε-transitions are not allowed.';
+        } else {
+          els.modeInfoText.innerHTML =
+            '<strong>ε-NFA (Non-deterministic Finite Automaton with ε-transitions)</strong>: Like an NFA, but supports ε-transitions (transitions without consuming input symbols), enabling instant state expansion.';
+        }
+      }
+    }
+
     if (resetTransitions && !wasSameType) state.transitions = {};
     renderTable();
     renderEyebrow();
@@ -166,14 +246,18 @@ export function createWorkspace({ storage, user, onSignOut }) {
       .join('');
   }
 
-  function renderDiagram() {
+  function renderDiagram(highlightStates = null, highlightEdges = null) {
     if (!els.diagram) return;
     const result = renderAutomatonDiagram(els.diagram, {
       states: state.states,
       alphabet: state.alphabet,
       startState: state.startState,
+      startStates: state.startStates,
       acceptStates: state.acceptStates,
       transitions: state.transitions,
+      type: state.type,
+      highlightStates,
+      highlightEdges,
     });
     els.diagramStatus.textContent =
       result.stateCount === 0
@@ -225,7 +309,13 @@ export function createWorkspace({ storage, user, onSignOut }) {
     state.name = els.name.value.trim();
     state.states = parseList(els.states.value);
     state.alphabet = parseList(els.alphabet.value);
-    state.startState = els.start.value.trim();
+    if (state.type === 'DFA') {
+      state.startState = els.start.value.trim();
+      state.startStates = state.startState ? [state.startState] : [];
+    } else {
+      state.startStates = parseList(els.start.value);
+      state.startState = state.startStates[0] || '';
+    }
     state.acceptStates = parseList(els.accept.value);
     els.nameDisplay.textContent = state.name || 'Untitled automaton';
   }
@@ -234,7 +324,11 @@ export function createWorkspace({ storage, user, onSignOut }) {
     els.name.value = state.name;
     els.states.value = state.states.join(', ');
     els.alphabet.value = state.alphabet.join(', ');
-    els.start.value = state.startState;
+    if (state.type === 'DFA') {
+      els.start.value = state.startState;
+    } else {
+      els.start.value = state.startStates.join(', ');
+    }
     els.accept.value = state.acceptStates.join(', ');
     els.nameDisplay.textContent = state.name || 'Untitled automaton';
   }
@@ -310,7 +404,10 @@ export function createWorkspace({ storage, user, onSignOut }) {
       row.dataset.rowState = fromState;
       const labelCell = document.createElement('td');
       labelCell.className = 'matrix__row-head';
-      const isStart = fromState === state.startState;
+      const isStart =
+        state.type === 'DFA'
+          ? fromState === state.startState
+          : state.startStates.includes(fromState);
       const isAccept = state.acceptStates.includes(fromState);
       const marks = [];
       if (isStart) marks.push('<span class="pill pill--start">start</span>');
@@ -351,17 +448,34 @@ export function createWorkspace({ storage, user, onSignOut }) {
       states: state.states,
       alphabet: state.alphabet,
       startState: state.startState,
+      startStates: state.startStates,
       acceptStates: state.acceptStates,
       transitions: state.transitions,
     };
     if (state.type === 'DFA') return new DFA(def);
-    return new NFA(def);
+    if (state.type === 'NFA') return new NFA({ ...def, allowEpsilon: false });
+    return new NFA({ ...def, allowEpsilon: true });
   }
 
   function friendlyError(message) {
     const text = String(message);
     if (text.includes('alphabet must not') && text.includes('ε')) {
       return 'Σ: do not include ε in the alphabet. Switch to ε-NFA when you need ε-transitions.';
+    }
+    if (text.includes('DFA needs exactly one start state')) {
+      return 'DFA needs exactly one start state.';
+    }
+    if (text.includes('DFA allows only one transition')) {
+      return 'DFA allows only one transition for each state and input symbol.';
+    }
+    if (text.includes('DFA does not support ε-transitions')) {
+      return 'DFA does not support ε-transitions.';
+    }
+    if (text.includes('NFA mode does not use ε-transitions')) {
+      return 'NFA mode does not use ε-transitions. Use ε-NFA mode for epsilon moves.';
+    }
+    if (text.includes('At least one start state must be specified')) {
+      return 'At least one start state must be specified.';
     }
     if (text.startsWith('startState')) {
       return 'q₀: choose exactly one start state that already appears in Q.';
@@ -401,6 +515,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
       els.test.value = '';
       els.batch.value = '';
     }
+    renderDiagram();
   }
 
   function dfaTraceDetail(trace) {
@@ -469,6 +584,8 @@ export function createWorkspace({ storage, user, onSignOut }) {
           detail: dfaTraceDetail(t),
           trace: { steps: t.steps },
         });
+        const finalState = t.finalState;
+        renderDiagram(finalState ? [finalState] : []);
       } else {
         const t = automaton.trace(input);
         renderTestResult({
@@ -477,6 +594,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
           detail: nfaTraceDetail(t),
           trace: t,
         });
+        renderDiagram(t.finalStates || []);
       }
     } catch (err) {
       if (err instanceof ValidationError || err instanceof EvaluationError) {
@@ -638,7 +756,19 @@ export function createWorkspace({ storage, user, onSignOut }) {
     state.name = def.name ?? '';
     state.states = def.states ?? [];
     state.alphabet = (def.alphabet ?? []).filter((s) => s !== EPSILON);
-    state.startState = def.startState ?? '';
+
+    // Support and migrate startStates / startState
+    if (def.startStates !== undefined) {
+      state.startStates = [...def.startStates];
+      state.startState = def.startState ?? state.startStates[0] ?? '';
+    } else if (def.startState !== undefined) {
+      state.startState = def.startState;
+      state.startStates = def.startState ? [def.startState] : [];
+    } else {
+      state.startState = '';
+      state.startStates = [];
+    }
+
     state.acceptStates = def.acceptStates ?? [];
     state.transitions = def.transitions ?? {};
     state.activeId = def.id ?? null;
@@ -665,6 +795,7 @@ export function createWorkspace({ storage, user, onSignOut }) {
         states: [],
         alphabet: [],
         startState: '',
+        startStates: [],
         acceptStates: [],
         transitions: {},
       },

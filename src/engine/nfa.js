@@ -24,7 +24,15 @@ function sorted(set) {
  * transitions shape: { state: { symbol: [nextState, ...] } }
  */
 export class NFA {
-  constructor({ states, alphabet, transitions, startState, acceptStates, allowEpsilon = true }) {
+  constructor({
+    states,
+    alphabet,
+    transitions,
+    startState,
+    startStates,
+    acceptStates,
+    allowEpsilon = true,
+  }) {
     this.states = asSet(states, 'states');
     this.alphabet = asSet(alphabet, 'alphabet');
     this.allowEpsilon = Boolean(allowEpsilon);
@@ -35,10 +43,25 @@ export class NFA {
       );
     }
 
-    if (typeof startState !== 'string' || !this.states.has(startState)) {
-      throw new ValidationError(`startState "${startState}" must be one of the states`);
+    if (startStates !== undefined) {
+      if (!Array.isArray(startStates) && !(startStates instanceof Set)) {
+        throw new ValidationError('startStates must be an array or Set');
+      }
+      this.startStates = new Set(startStates);
+      if (this.startStates.size === 0) {
+        throw new ValidationError('At least one start state must be specified');
+      }
+      for (const s of this.startStates) {
+        if (typeof s !== 'string' || !this.states.has(s)) {
+          throw new ValidationError(`startState "${s}" must be one of the states`);
+        }
+      }
+    } else {
+      if (typeof startState !== 'string' || !this.states.has(startState)) {
+        throw new ValidationError(`startState "${startState}" must be one of the states`);
+      }
+      this.startStates = new Set([startState]);
     }
-    this.startState = startState;
 
     const accept = new Set(acceptStates ?? []);
     for (const s of accept) {
@@ -50,6 +73,10 @@ export class NFA {
 
     this.transitions = this.#normalize(transitions);
     this.hasEpsilon = this.#detectEpsilon();
+  }
+
+  get startState() {
+    return [...this.startStates][0];
   }
 
   #normalize(transitions) {
@@ -138,7 +165,7 @@ export class NFA {
     if (typeof input !== 'string') {
       throw new EvaluationError('input must be a string');
     }
-    let current = this.epsilonClosure(this.startState);
+    let current = this.epsilonClosureOfSet(this.startStates);
     const symbols = [...input];
     for (let i = 0; i < symbols.length; i += 1) {
       const symbol = symbols[i];
@@ -160,7 +187,7 @@ export class NFA {
       throw new EvaluationError('input must be a string');
     }
 
-    let current = this.epsilonClosure(this.startState);
+    let current = this.epsilonClosureOfSet(this.startStates);
     const steps = [
       {
         index: 0,
@@ -224,6 +251,7 @@ export class NFA {
       states: [...this.states],
       alphabet: [...this.alphabet],
       transitions,
+      startStates: [...this.startStates],
       startState: this.startState,
       acceptStates: [...this.acceptStates],
     };
@@ -234,6 +262,7 @@ export class NFA {
       states: json.states,
       alphabet: json.alphabet,
       transitions: json.transitions,
+      startStates: json.startStates,
       startState: json.startState,
       acceptStates: json.acceptStates,
     });

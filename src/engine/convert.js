@@ -25,7 +25,7 @@ function letterLabel(index) {
  */
 export function nfaToDfa(nfa) {
   const alphabet = [...nfa.alphabet];
-  const startClosure = nfa.epsilonClosure(nfa.startState);
+  const startClosure = nfa.epsilonClosureOfSet(nfa.startStates);
   const startKey = setKey(startClosure);
 
   // subset-key -> { label, source: Set<originalState> }

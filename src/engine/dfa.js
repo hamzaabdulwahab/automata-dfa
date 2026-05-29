@@ -58,6 +58,11 @@ export class DFA {
         if (!this.alphabet.has(symbol)) {
           throw new ValidationError(`symbol "${symbol}" on state "${from}" is not in the alphabet`);
         }
+        if (typeof to === 'string' && to.includes(',')) {
+          throw new ValidationError(
+            `DFA allows only one transition per state-symbol pair. δ(${from}, ${symbol}) has multiple targets.`
+          );
+        }
         if (!this.states.has(to)) {
           throw new ValidationError(
             `transition target "${to}" (from ${from} on ${symbol}) is not a declared state`

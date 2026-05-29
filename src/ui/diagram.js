@@ -60,16 +60,27 @@ function collectEdges(definition) {
   }));
 }
 
-function drawEdge(root, edge, points) {
+function drawEdge(root, edge, points, definition) {
   const from = points.get(edge.from);
   const to = points.get(edge.target);
   if (!from || !to) return;
+
+  const isEdgeActive =
+    definition.highlightEdges &&
+    (Array.isArray(definition.highlightEdges)
+      ? definition.highlightEdges.some((e) => e.from === edge.from && e.target === edge.target)
+      : definition.highlightEdges instanceof Set
+        ? definition.highlightEdges.has(`${edge.from}\u0000${edge.target}`)
+        : false);
+
+  let edgeClass = 'diagram__edge';
+  if (isEdgeActive) edgeClass += ' diagram__edge--active';
 
   if (edge.from === edge.target) {
     root.appendChild(
       svg('path', {
         d: `M ${from.x - 16} ${from.y - 19} C ${from.x - 64} ${from.y - 78}, ${from.x + 64} ${from.y - 78}, ${from.x + 16} ${from.y - 19}`,
-        class: 'diagram__edge',
+        class: edgeClass,
         markerEnd: 'url(#diagram-arrow)',
       })
     );
@@ -103,7 +114,7 @@ function drawEdge(root, edge, points) {
   root.appendChild(
     svg('path', {
       d: `M ${start.x} ${start.y} Q ${mid.x} ${mid.y}, ${end.x} ${end.y}`,
-      class: 'diagram__edge',
+      class: edgeClass,
       markerEnd: 'url(#diagram-arrow)',
     })
   );
@@ -116,7 +127,10 @@ function drawEdge(root, edge, points) {
 }
 
 function drawNode(root, state, point, definition) {
-  const isStart = state === definition.startState;
+  const isStart =
+    definition.type === 'DFA' || !definition.startStates
+      ? state === definition.startState
+      : definition.startStates.includes(state);
   const isAccept = definition.acceptStates.includes(state);
   const group = svg('g', { class: 'diagram__node' });
 
@@ -130,12 +144,25 @@ function drawNode(root, state, point, definition) {
     );
   }
 
+  const isActive =
+    definition.highlightStates &&
+    (Array.isArray(definition.highlightStates)
+      ? definition.highlightStates.includes(state)
+      : definition.highlightStates instanceof Set
+        ? definition.highlightStates.has(state)
+        : definition.highlightStates === state);
+
+  let stateClass = isAccept ? 'diagram__state diagram__state--accept' : 'diagram__state';
+  if (isActive) {
+    stateClass += ' diagram__state--active';
+  }
+
   group.appendChild(
     svg('circle', {
       cx: point.x,
       cy: point.y,
       r: 24,
-      class: isAccept ? 'diagram__state diagram__state--accept' : 'diagram__state',
+      class: stateClass,
     })
   );
   if (isAccept) {
@@ -196,7 +223,7 @@ export function renderAutomatonDiagram(container, definition) {
   const edgeLayer = svg('g', { class: 'diagram__edges' });
   const nodeLayer = svg('g', { class: 'diagram__nodes' });
   const edges = collectEdges(definition);
-  edges.forEach((edge) => drawEdge(edgeLayer, edge, points));
+  edges.forEach((edge) => drawEdge(edgeLayer, edge, points, definition));
   definition.states.forEach((state) => drawNode(nodeLayer, state, points.get(state), definition));
 
   root.append(edgeLayer, nodeLayer);

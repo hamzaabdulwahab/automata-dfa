@@ -72,6 +72,36 @@ describe('analyzeAutomaton', () => {
     );
     expect(report.entries.some((entry) => entry.text.includes('multiple targets'))).toBe(true);
   });
+
+  it('validates startStates for NFA and epsilon-NFA', () => {
+    const reportEmptyStart = analyzeAutomaton({
+      type: 'NFA',
+      states: ['q0', 'q1'],
+      alphabet: ['a'],
+      startStates: [],
+      acceptStates: ['q1'],
+      transitions: {
+        q0: { a: ['q1'] },
+      },
+    });
+    expect(reportEmptyStart.problemCount).toBeGreaterThan(0);
+    expect(reportEmptyStart.entries.some((e) => e.text.includes('S is empty'))).toBe(true);
+
+    const reportUndeclaredStart = analyzeAutomaton({
+      type: 'NFA',
+      states: ['q0', 'q1'],
+      alphabet: ['a'],
+      startStates: ['q0', 'q_undeclared'],
+      acceptStates: ['q1'],
+      transitions: {
+        q0: { a: ['q1'] },
+      },
+    });
+    expect(reportUndeclaredStart.problemCount).toBeGreaterThan(0);
+    expect(reportUndeclaredStart.entries.some((e) => e.text.includes('undeclared states'))).toBe(
+      true
+    );
+  });
 });
 
 describe('formatSet', () => {

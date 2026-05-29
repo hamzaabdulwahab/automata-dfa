@@ -2,7 +2,7 @@ import './styles/main.css';
 import { renderIcons } from './ui/icons.js';
 import { mountThemeToggle } from './ui/theme.js';
 import { requireUser, signOut, AuthConfigError } from './auth/firebase.js';
-import { localStorageAdapter } from './storage/local.js';
+import { storageAdapter } from './storage/index.js';
 import { createWorkspace } from './ui/workspace.js';
 
 async function init() {
@@ -32,7 +32,7 @@ async function init() {
   document.documentElement.setAttribute('data-auth', 'ready');
 
   createWorkspace({
-    storage: localStorageAdapter,
+    storage: storageAdapter,
     user,
     onSignOut: () =>
       signOut({ redirectUrl: new URL('/auth.html', window.location.origin).toString() }),
