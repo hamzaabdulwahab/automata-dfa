@@ -1,0 +1,15 @@
+# CODEOWNERS for Automata Studio
+
+# Default owner for everything in the repository
+*                   @hamzaabdulwahab
+
+# Engine logic code changes
+/src/engine/        @hamzaabdulwahab
+
+# Firebase & authentication configurations
+/src/auth/          @hamzaabdulwahab
+/firestore.rules    @hamzaabdulwahab
+/firebase.json      @hamzaabdulwahab
+
+# CI/CD and repository configurations
+/.github/workflows/ @hamzaabdulwahab

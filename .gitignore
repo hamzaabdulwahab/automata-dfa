@@ -47,7 +47,9 @@ ux-*.png
 .agent/
 .claude/
 .remember/
-CLAUDE.md
+.cursor/
+!CLAUDE.md
+!AGENTS.md
 
 # Design/Product docs & references
 DESIGN.md
